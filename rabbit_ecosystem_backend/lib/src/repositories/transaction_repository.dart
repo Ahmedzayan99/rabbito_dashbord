@@ -1,13 +1,58 @@
 import 'dart:async';
 import 'package:postgres/postgres.dart';
+import 'package:uuid/uuid.dart';
 import '../models/transaction.dart';
+import '../models/order.dart';
+import '../models/payment.dart';
 import 'base_repository.dart';
 
-class TransactionRepository extends BaseRepository {
-  TransactionRepository(PostgreSQLConnection connection) : super(connection);
+class TransactionRepository extends BaseRepository<Transaction> {
+  TransactionRepository(Connection connection) : super(connection);
+
+  @override
+  String get tableName => 'transactions';
+
+  @override
+  Transaction fromMap(Map<String, dynamic> map) {
+    return Transaction(
+      id: map['id'] as int,
+      uuid: map['uuid'] as String,
+      userId: map['user_id'] as int,
+      orderId: map['order_id'] as int?,
+      type: TransactionType.fromString(map['type'] as String),
+      amount: map['amount'] as double,
+      description: map['description'] as String?,
+      referenceId: map['reference_id'] as String?,
+      paymentMethod: map['payment_method'] != null ? PaymentMethod.fromString(map['payment_method'] as String) : null,
+      status: TransactionStatus.fromString(map['status'] as String),
+      processedAt: map['processed_at'] != null ? DateTime.parse(map['processed_at'] as String) : null,
+      createdAt: DateTime.parse(map['created_at'] as String),
+    );
+  }
+
+  @override
+  Map<String, dynamic> toMap(Transaction transaction) {
+    return {
+      'uuid': transaction.uuid,
+      'user_id': transaction.userId,
+      'order_id': transaction.orderId,
+      'type': transaction.type.value,
+      'amount': transaction.amount,
+      'description': transaction.description,
+      'reference_id': transaction.referenceId,
+      'payment_method': transaction.paymentMethod?.value,
+      'status': transaction.status.value,
+      'processed_at': transaction.processedAt?.toIso8601String(),
+      'created_at': transaction.createdAt.toIso8601String(),
+    };
+  }
+
+  String generateUuid() {
+    return const Uuid().v4();
+  }
 
   /// Create a new transaction
-  Future<Transaction> create(CreateTransactionRequest request) async {
+  Future<Transaction> createTransaction(CreateTransactionRequest request) async {
     final uuid = generateUuid();
     final result = await executeQuery('''
       INSERT INTO transactions (
@@ -413,7 +458,7 @@ class TransactionRepository extends BaseRepository {
       referenceId: 'commission_$orderId',
     );
 
-    final commissionTransaction = await create(commissionRequest);
+    final commissionTransaction = await create(commissionRequest.toJson());
 
     // Mark commission as completed
     await updateStatus(commissionTransaction.id, TransactionStatus.completed);
@@ -437,7 +482,7 @@ class TransactionRepository extends BaseRepository {
       referenceId: 'refund_$orderId',
     );
 
-    final refundTransaction = await create(refundRequest);
+    final refundTransaction = await create(refundRequest.toJson());
 
     // Mark refund as completed
     await updateStatus(refundTransaction.id, TransactionStatus.completed);

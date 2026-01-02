@@ -13,8 +13,22 @@ abstract class BaseController {
 
   /// Get ID parameter from request URL
   static int? getIdFromParams(Request request, String paramName) {
-    final param = request.params[paramName];
-    return param != null ? int.tryParse(param) : null;
+    // For shelf_router, params are available on request
+    // For basic shelf, we need to parse from URL
+    try {
+      final params = request.context['shelf_router/params'] as Map<String, String>?;
+      if (params != null) {
+        final param = params[paramName];
+        return param != null ? int.tryParse(param) : null;
+      }
+    } catch (e) {
+      // Fallback: try to parse from URL path
+      final uri = request.url;
+      final pathSegments = uri.pathSegments;
+      // This is a simplified fallback - in real implementation,
+      // you'd want more robust URL parameter parsing
+    }
+    return null;
   }
 
   /// Parse JSON body from request

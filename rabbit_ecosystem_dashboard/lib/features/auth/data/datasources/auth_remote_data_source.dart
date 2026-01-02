@@ -1,4 +1,5 @@
-import '../../../core/network/api_client.dart';
+import 'package:rabbit_ecosystem_dashboard/core/network/api_client.dart';
+
 
 abstract class AuthRemoteDataSource {
   Future<Map<String, dynamic>> login(String email, String password);
@@ -14,7 +15,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<Map<String, dynamic>> login(String email, String password) async {
     final response = await apiClient.post(
-      '/auth/login',
+      '/api/dashboard/auth/login',
       data: {
         'email': email,
         'password': password,
@@ -43,3 +44,4 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     return;
   }
 }
+

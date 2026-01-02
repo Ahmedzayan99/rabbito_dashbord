@@ -9,13 +9,14 @@ import '../repositories/refresh_token_repository.dart';
 
 class AuthMiddleware {
   static final JwtService _jwtService = JwtService();
-  static final AuthService _authService = AuthService(
-    userRepository: UserRepository(),
-    refreshTokenRepository: RefreshTokenRepository(),
-  );
+  // AuthService will be initialized when database connection is available
+  static AuthService? _authService;
 
   /// Middleware to validate JWT token and add user to request context
-  static Middleware get middleware {
+  static Middleware get middleware => authenticate;
+
+  /// Authenticate middleware (alias for middleware)
+  static Middleware get authenticate {
     return (Handler innerHandler) {
       return (Request request) async {
         final token = _extractTokenFromRequest(request);
@@ -27,7 +28,7 @@ class AuthMiddleware {
           );
         }
 
-        final user = await _authService.validateAccessToken(token);
+        final user = await _authService?.validateAccessToken(token);
         if (user == null) {
           return Response.unauthorized(
             jsonEncode({'error': 'Invalid or expired token'}),
@@ -66,7 +67,7 @@ class AuthMiddleware {
 
   /// Validate token without middleware (for manual validation)
   static Future<User?> validateToken(String token) async {
-    return await _authService.validateAccessToken(token);
+    return await _authService?.validateAccessToken(token);
   }
 
   /// Check if user can access mobile API

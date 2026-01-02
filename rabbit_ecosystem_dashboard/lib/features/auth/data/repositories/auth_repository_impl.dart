@@ -1,3 +1,5 @@
+import 'package:dartz/dartz.dart';
+import '../../../../core/error/failures.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_local_data_source.dart';
 import '../datasources/auth_remote_data_source.dart';
@@ -12,59 +14,61 @@ class AuthRepositoryImpl implements AuthRepository {
   });
 
   @override
-  Future<Map<String, dynamic>> login(String email, String password) async {
+  Future<Either<Failure, void>> login(String email, String password) async {
     try {
       final result = await remoteDataSource.login(email, password);
 
-      // Save tokens if login successful
-      if (result['data'] != null) {
-        final token = result['data']['accessToken'];
-        final refreshToken = result['data']['refreshToken'];
+      // Save tokens and user role if login successful
+      final token = result['token'];
+      final refreshToken = result['refreshToken'];
+      final user = result['user'];
 
-        if (token != null) {
-          await saveToken(token);
-        }
-        if (refreshToken != null) {
-          await saveRefreshToken(refreshToken);
-        }
+      if (token != null) {
+        await saveToken(token);
+      }
+      if (refreshToken != null) {
+        await saveRefreshToken(refreshToken);
+      }
+      if (user != null && user['role'] != null) {
+        await saveUserRole(user['role']);
       }
 
-      return result;
+      return const Right(null);
     } catch (e) {
-      rethrow;
+      return Left(ServerFailure('Login failed: ${e.toString()}'));
     }
   }
 
   @override
-  Future<Map<String, dynamic>> refreshToken(String refreshToken) async {
+  Future<Either<Failure, void>> refreshToken(String refreshToken) async {
     try {
       final result = await remoteDataSource.refreshToken(refreshToken);
 
       // Save new tokens
-      if (result['data'] != null) {
-        final token = result['data']['accessToken'];
-        final newRefreshToken = result['data']['refreshToken'];
+      final token = result['token'];
+      final newRefreshToken = result['refreshToken'];
 
-        if (token != null) {
-          await saveToken(token);
-        }
-        if (newRefreshToken != null) {
-          await saveRefreshToken(newRefreshToken);
-        }
+      if (token != null) {
+        await saveToken(token);
+      }
+      if (newRefreshToken != null) {
+        await saveRefreshToken(newRefreshToken);
       }
 
-      return result;
+      return const Right(null);
     } catch (e) {
-      rethrow;
+      return Left(ServerFailure('Token refresh failed: ${e.toString()}'));
     }
   }
 
   @override
-  Future<void> logout() async {
+  Future<Either<Failure, void>> logout() async {
     try {
       await remoteDataSource.logout();
-    } finally {
       await clearTokens();
+      return const Right(null);
+    } catch (e) {
+      return Left(ServerFailure('Logout failed: ${e.toString()}'));
     }
   }
 
@@ -79,6 +83,11 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<String?> getUserRole() async {
+    return await localDataSource.getUserRole();
+  }
+
+  @override
   Future<void> saveToken(String token) async {
     await localDataSource.saveToken(token);
   }
@@ -89,7 +98,13 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<void> saveUserRole(String role) async {
+    await localDataSource.saveUserRole(role);
+  }
+
+  @override
   Future<void> clearTokens() async {
     await localDataSource.clearTokens();
   }
 }
+

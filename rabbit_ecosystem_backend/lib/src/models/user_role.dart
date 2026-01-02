@@ -2,9 +2,12 @@ enum UserRole {
   customer('customer'),
   partner('partner'),
   rider('rider'),
+  dispatcher('dispatcher'),
   superAdmin('super_admin'),
   admin('admin'),
   finance('finance'),
+  marketing('marketing'),
+  analytics('analytics'),
   support('support');
 
   const UserRole(this.value);
@@ -18,7 +21,7 @@ enum UserRole {
   }
 
   bool get isAdmin => [superAdmin, admin].contains(this);
-  bool get isStaff => [superAdmin, admin, finance, support].contains(this);
+  bool get isStaff => [superAdmin, admin, finance, marketing, analytics, support, dispatcher].contains(this);
   bool get canAccessDashboard => isStaff;
   bool get canAccessMobileAPI => [customer, partner, rider].contains(this);
 
@@ -59,11 +62,35 @@ enum UserRole {
           'products.read',
           'products.update',
         ];
+      case UserRole.dispatcher:
+        return [
+          'orders.read',
+          'orders.update',
+          'partners.read',
+          'riders.read',
+        ];
       case UserRole.finance:
         return [
           'transactions.read',
           'transactions.update',
           'analytics.read',
+        ];
+      case UserRole.marketing:
+        return [
+          'partners.read',
+          'products.read',
+          'analytics.read',
+          'promotions.create',
+          'promotions.read',
+          'promotions.update',
+        ];
+      case UserRole.analytics:
+        return [
+          'analytics.read',
+          'reports.read',
+          'orders.read',
+          'partners.read',
+          'products.read',
         ];
       case UserRole.support:
         return [

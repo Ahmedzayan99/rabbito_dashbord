@@ -170,3 +170,57 @@ class Notification {
     return 'Notification(id: $id, userId: $userId, title: $title, message: $message, type: $type, status: $status, data: $data, readAt: $readAt, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 }
+
+/// Request model for creating notifications
+class CreateNotificationRequest {
+  final int? userId;
+  final String title;
+  final String message;
+  final NotificationType type;
+  final Map<String, dynamic>? data;
+
+  CreateNotificationRequest({
+    this.userId,
+    required this.title,
+    String? message,
+    String? body,
+    NotificationType? type,
+    String? typeString,
+    this.data,
+  })  : message = message ?? body ?? '',
+        type = type ?? _parseNotificationType(typeString);
+
+  Map<String, dynamic> toJson() {
+    return {
+      'user_id': userId,
+      'title': title,
+      'message': message,
+      'type': type.name,
+      'data': data,
+      'status': NotificationStatus.sent.name,
+      'created_at': DateTime.now().toIso8601String(),
+    };
+  }
+
+  factory CreateNotificationRequest.fromJson(Map<String, dynamic> json) {
+    return CreateNotificationRequest(
+      userId: json['userId'] as int?,
+      title: json['title'] as String,
+      message: json['message'] as String,
+      type: NotificationType.values.firstWhere(
+        (t) => t.name == json['type'],
+        orElse: () => NotificationType.general,
+      ),
+      data: json['data'] as Map<String, dynamic>?,
+    );
+  }
+}
+
+/// Helper function to parse notification type
+NotificationType _parseNotificationType(String? typeString) {
+  if (typeString == null) return NotificationType.general;
+  return NotificationType.values.firstWhere(
+    (t) => t.name == typeString,
+    orElse: () => NotificationType.general,
+  );
+}

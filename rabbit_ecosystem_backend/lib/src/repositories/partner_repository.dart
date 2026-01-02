@@ -12,36 +12,56 @@ class PartnerRepository extends BaseRepository<Partner> {
 
   @override
   Partner fromMap(Map<String, dynamic> map) {
-    return Partner.fromMap(map);
+    return Partner(
+      id: map['id'] as int,
+      userId: map['user_id'] as int,
+      partnerName: map['partner_name'] as String,
+      ownerName: map['owner_name'] as String?,
+      partnerAddress: map['partner_address'] as String?,
+      cityId: map['city_id'] as int?,
+      latitude: map['latitude'] as double?,
+      longitude: map['longitude'] as double?,
+      cookingTime: map['cooking_time'] as int,
+      commission: map['commission'] as double,
+      isFeatured: map['is_featured'] as bool,
+      isBusy: map['is_busy'] as bool,
+      status: PartnerStatus.fromString(map['status'] as String),
+      openingTime: map['opening_time'] as String?,
+      closingTime: map['closing_time'] as String?,
+      phone: map['phone'] as String?,
+      description: map['description'] as String?,
+      image: map['image'] as String?,
+      coverImage: map['cover_image'] as String?,
+      minimumOrder: map['minimum_order'] as double,
+      deliveryCharge: map['delivery_charge'] as double,
+      createdAt: DateTime.parse(map['created_at'] as String),
+      updatedAt: map['updated_at'] != null ? DateTime.parse(map['updated_at'] as String) : null,
+    );
   }
 
   @override
   Map<String, dynamic> toMap(Partner partner) {
     return {
       'user_id': partner.userId,
-      'business_name': partner.businessName,
-      'business_type': partner.businessType,
-      'business_license': partner.businessLicense,
-      'tax_number': partner.taxNumber,
-      'address': partner.address,
+      'partner_name': partner.partnerName,
+      'owner_name': partner.ownerName,
+      'partner_address': partner.partnerAddress,
+      'city_id': partner.cityId,
       'latitude': partner.latitude,
       'longitude': partner.longitude,
-      'phone': partner.phone,
-      'email': partner.email,
-      'website': partner.website,
-      'description': partner.description,
-      'logo': partner.logo,
-      'cover_image': partner.coverImage,
-      'status': partner.status.name,
-      'rating': partner.rating,
-      'no_of_ratings': partner.numberOfRatings,
-      'commission_rate': partner.commissionRate,
+      'cooking_time': partner.cookingTime,
+      'commission': partner.commission,
       'is_featured': partner.isFeatured,
-      'opening_hours': partner.openingHours,
-      'delivery_radius': partner.deliveryRadius,
+      'is_busy': partner.isBusy,
+      'status': partner.status.value,
+      'opening_time': partner.openingTime,
+      'closing_time': partner.closingTime,
+      'phone': partner.phone,
+      'description': partner.description,
+      'image': partner.image,
+      'cover_image': partner.coverImage,
       'minimum_order': partner.minimumOrder,
-      'delivery_fee': partner.deliveryFee,
-      'estimated_delivery_time': partner.estimatedDeliveryTime,
+      'delivery_charge': partner.deliveryCharge,
       'created_at': partner.createdAt.toIso8601String(),
       'updated_at': partner.updatedAt?.toIso8601String(),
     };
@@ -221,7 +241,31 @@ class PartnerRepository extends BaseRepository<Partner> {
   }
 
   /// Get partner statistics (general)
-  Future<Map<String, dynamic>> getPartnerStats() async {
+  Future<Map<String, dynamic>> getPartnerStats({
+    int? partnerId,
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
+    final conditions = <String>[];
+    final parameters = <String, dynamic>{};
+
+    if (partnerId != null) {
+      conditions.add('id = @partnerId');
+      parameters['partnerId'] = partnerId;
+    }
+
+    if (startDate != null) {
+      conditions.add('created_at >= @startDate');
+      parameters['startDate'] = startDate.toIso8601String();
+    }
+
+    if (endDate != null) {
+      conditions.add('created_at <= @endDate');
+      parameters['endDate'] = endDate.toIso8601String();
+    }
+
+    final whereClause = conditions.isNotEmpty ? 'WHERE ${conditions.join(' AND ')}' : '';
+
     final result = await executeQuerySingle('''
       SELECT
         COUNT(*) as total_partners,
@@ -232,45 +276,12 @@ class PartnerRepository extends BaseRepository<Partner> {
         AVG(rating) as average_rating,
         AVG(commission_rate) as average_commission_rate
       FROM partners
-    ''');
+      $whereClause
+    ''', parameters: parameters);
 
     return result ?? {};
   }
 
-  /// Get partner statistics by ID and date range
-  Future<Map<String, dynamic>> getPartnerStats(
-    int partnerId, {
-    DateTime? startDate,
-    DateTime? endDate,
-  }) async {
-    final start = startDate ?? DateTime.now().subtract(const Duration(days: 30));
-    final end = endDate ?? DateTime.now();
-
-    final result = await executeQuerySingle('''
-      SELECT
-        p.business_name,
-        p.rating,
-        p.no_of_ratings,
-        p.commission_rate,
-        COUNT(o.id) as total_orders,
-        COUNT(CASE WHEN o.status = 'completed' THEN 1 END) as completed_orders,
-        COALESCE(SUM(CASE WHEN o.status = 'completed' THEN o.total END), 0) as total_revenue,
-        COALESCE(AVG(CASE WHEN o.status = 'completed' THEN o.total END), 0) as average_order_value,
-        COUNT(DISTINCT DATE(o.created_at)) as active_days
-      FROM partners p
-      LEFT JOIN orders o ON p.id = o.partner_id
-        AND o.created_at >= @startDate
-        AND o.created_at <= @endDate
-      WHERE p.id = @partnerId
-      GROUP BY p.id, p.business_name, p.rating, p.no_of_ratings, p.commission_rate
-    ''', parameters: {
-      'partnerId': partnerId,
-      'startDate': start.toIso8601String(),
-      'endDate': end.toIso8601String(),
-    });
-
-    return result ?? {};
-  }
 
   /// Get top rated partners
   Future<List<Partner>> getTopRatedPartners({int limit = 10}) async {

@@ -163,7 +163,7 @@ class CartService {
       if (item.variantId != null) {
         final variant = product.variants?.firstWhere(
           (v) => v.id == item.variantId,
-          orElse: () => null,
+          orElse: () => throw Exception('Variant not found'),
         );
         if (variant == null) {
           errors.add('Product variant for ${product.name} is not available');
@@ -180,7 +180,7 @@ class CartService {
   /// Get cart items count
   Future<int> getCartItemsCount(int userId) async {
     final cartItems = await _cartRepository.getUserCartItems(userId);
-    return cartItems.fold(0, (sum, item) => sum + item.quantity);
+    return cartItems.fold<int>(0, (sum, item) => sum + (item.quantity ?? 0));
   }
 
   /// Apply coupon to cart
@@ -269,3 +269,4 @@ class CartService {
     return await getUserCart(userId);
   }
 }
+

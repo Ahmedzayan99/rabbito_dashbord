@@ -13,3 +13,4 @@ class LoggingInterceptor extends PrettyDioLogger {
           maxWidth: 90,
         );
 }
+

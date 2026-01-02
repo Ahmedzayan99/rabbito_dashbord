@@ -383,7 +383,7 @@ class PartnerService {
     DateTime? endDate,
   }) async {
     return await _partnerRepository.getPartnerStats(
-      partnerId,
+      partnerId: partnerId,
       startDate: startDate,
       endDate: endDate,
     );

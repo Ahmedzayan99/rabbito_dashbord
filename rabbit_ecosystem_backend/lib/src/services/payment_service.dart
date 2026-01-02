@@ -49,25 +49,30 @@ class PaymentService {
       }
 
       // Create payment record
+      final transactionId = paymentResult.transactionId;
+      if (transactionId == null) {
+        return PaymentResult.error('Payment processing failed: no transaction ID');
+      }
+
       final payment = await _paymentRepository.createPayment(
         orderId: orderId,
         userId: userId,
         amount: amount,
         paymentMethod: paymentMethod,
-        transactionId: paymentResult.transactionId,
+        transactionId: transactionId,
         status: PaymentStatus.completed,
       );
 
       // Create transaction record
-      await _transactionRepository.createTransaction(
+      await _transactionRepository.createTransaction(CreateTransactionRequest(
         userId: userId,
         orderId: orderId,
         type: TransactionType.orderPayment,
         amount: amount,
         paymentMethod: paymentMethod,
         referenceId: payment.transactionId,
-        status: 'completed',
-      );
+        status: TransactionStatus.completed,
+      ));
 
       return PaymentResult.success(
         payment: payment,
@@ -132,25 +137,30 @@ class PaymentService {
         return refundResult;
       }
 
+      final refundTransactionId = refundResult.transactionId;
+      if (refundTransactionId == null) {
+        return PaymentResult.error('Refund processing failed: no transaction ID');
+      }
+
       // Create refund record
       final refund = await _paymentRepository.createRefund(
         paymentId: paymentId,
         amount: refundAmount,
         reason: reason,
         refundedBy: refundedBy,
-        refundTransactionId: refundResult.transactionId,
+        refundTransactionId: refundTransactionId,
       );
 
       // Create refund transaction record
-      await _transactionRepository.createTransaction(
+      await _transactionRepository.createTransaction(CreateTransactionRequest(
         userId: payment.userId,
         orderId: payment.orderId,
         type: TransactionType.refund,
         amount: refundAmount,
         paymentMethod: payment.paymentMethod,
         referenceId: refund.refundTransactionId,
-        status: 'completed',
-      );
+        status: TransactionStatus.completed,
+      ));
 
       return PaymentResult.success(
         refund: refund,
@@ -519,3 +529,4 @@ class PaymentResult {
     );
   }
 }
+

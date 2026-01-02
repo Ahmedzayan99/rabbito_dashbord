@@ -5,7 +5,8 @@ import '../../models/user.dart';
 import '../../models/order.dart';
 
 class OrderController {
-  static final OrderService _orderService = OrderService();
+  // TODO: Initialize with proper repositories
+  static final OrderService _orderService = OrderService(null as dynamic, null as dynamic, null as dynamic, null as dynamic);
   
   static Future<Response> createOrder(Request request) async {
     try {
@@ -19,7 +20,17 @@ class OrderController {
         'status': OrderStatus.pending.name,
       });
       
-      final createdOrder = await _orderService.createOrder(order);
+      final createdOrder = await _orderService.createOrder(
+        customerId: user.id,
+        partnerId: order.partnerId,
+        addressId: order.addressId,
+        items: order.items.map((item) => {
+          'product_id': item.productId,
+          'quantity': item.quantity,
+          'special_instructions': item.specialInstructions,
+        }).toList(),
+        notes: order.notes,
+      );
       
       if (createdOrder == null) {
         return Response.badRequest(
@@ -47,7 +58,7 @@ class OrderController {
       final page = int.tryParse(queryParams['page'] ?? '1') ?? 1;
       final limit = int.tryParse(queryParams['limit'] ?? '20') ?? 20;
       
-      final orders = await _orderService.getUserOrders(user.id, page: page, limit: limit);
+      final orders = await _orderService.getCustomerOrders(user.id, limit: limit, offset: (page - 1) * limit);
       
       return Response.ok(
         jsonEncode({
@@ -68,7 +79,7 @@ class OrderController {
   static Future<Response> getOrder(Request request) async {
     try {
       final user = request.context['user'] as User;
-      final orderId = int.tryParse(request.params['orderId'] ?? '');
+      final orderId = int.tryParse(request.url.queryParameters['orderId'] ?? '');
       
       if (orderId == null) {
         return Response.badRequest(

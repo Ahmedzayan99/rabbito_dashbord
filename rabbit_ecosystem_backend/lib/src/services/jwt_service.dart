@@ -22,6 +22,13 @@ class JwtService {
         _accessTokenExpiry = accessTokenExpiry ?? _defaultAccessTokenExpiry,
         _refreshTokenExpiry = refreshTokenExpiry ?? _defaultRefreshTokenExpiry;
 
+  /// Hash password using SHA-256
+  String hashPassword(String password) {
+    final bytes = utf8.encode(password);
+    final hash = sha256.convert(bytes);
+    return hash.toString();
+  }
+
   /// Generate access token for user
   String generateAccessToken(User user) {
     final now = DateTime.now();

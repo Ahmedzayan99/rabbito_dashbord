@@ -47,16 +47,14 @@ class AuthService {
         }
       }
 
-      // Hash password
-      final hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
-
-      // Create user with UUID
-      final userWithUuid = user.copyWith(
-        uuid: _uuid.v4(),
-        createdAt: DateTime.now(),
+      // Create user
+      final createdUser = await _userRepository.createUser(
+        mobile: user.mobile,
+        password: password,
+        username: user.username,
+        email: user.email,
+        role: user.role,
       );
-
-      final createdUser = await _userRepository.create(userWithUuid, hashedPassword);
 
       // Generate tokens
       final tokenPair = _jwtService.generateTokenPair(createdUser);
@@ -98,14 +96,8 @@ class AuthService {
         return null;
       }
 
-      // Get password hash
-      final passwordHash = await _userRepository.getPasswordHash(user.id);
-      if (passwordHash == null) {
-        return null;
-      }
-
       // Verify password
-      if (!BCrypt.checkpw(password, passwordHash)) {
+      if (!await _userRepository.verifyPassword(user, password)) {
         return null;
       }
 
@@ -227,14 +219,14 @@ class AuthService {
         return false;
       }
 
-      // Get current password hash
-      final currentHash = await _userRepository.getPasswordHash(userId);
-      if (currentHash == null) {
+      // Get user
+      final user = await _userRepository.findById(userId);
+      if (user == null) {
         return false;
       }
 
       // Verify current password
-      if (!BCrypt.checkpw(currentPassword, currentHash)) {
+      if (!await _userRepository.verifyPassword(user, currentPassword)) {
         return false;
       }
 

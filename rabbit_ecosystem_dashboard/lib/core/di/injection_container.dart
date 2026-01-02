@@ -12,7 +12,7 @@ import '../../features/auth/domain/repositories/auth_repository.dart';
 import '../../features/auth/domain/usecases/login_usecase.dart';
 import '../../features/auth/domain/usecases/logout_usecase.dart';
 import '../../features/auth/domain/usecases/refresh_token_usecase.dart';
-// import '../../features/auth/presentation/bloc/auth_bloc.dart';
+import '../../features/auth/presentation/bloc/auth_bloc.dart';
 import '../../features/dashboard/domain/usecases/get_dashboard_stats_usecase.dart';
 import '../../features/dashboard/data/repositories/dashboard_repository_impl.dart';
 import '../../features/dashboard/domain/repositories/dashboard_repository.dart';
@@ -69,45 +69,12 @@ Future<void> setupInjection() async {
   sl.registerLazySingleton(() => RefreshTokenUseCase(repository: sl()));
   sl.registerLazySingleton(() => GetDashboardStatsUseCase(repository: sl()));
 
-  // BLoCs will be registered here as features are implemented
-  // AuthBloc is registered manually in the widget tree for now
-}
-
-// Lazy singleton registration helper
-void registerLazySingleton<T extends Object>(
-  T Function() factoryFunc, {
-  String? instanceName,
-  bool? signalsReady,
-}) {
-  sl.registerLazySingleton<T>(
-    factoryFunc,
-    instanceName: instanceName,
-    signalsReady: signalsReady,
-  );
-}
-
-// Factory registration helper
-void registerFactory<T extends Object>(
-  T Function() factoryFunc, {
-  String? instanceName,
-}) {
-  sl.registerFactory<T>(
-    factoryFunc,
-    instanceName: instanceName,
-  );
-}
-
-// Singleton registration helper
-void registerSingleton<T extends Object>(
-  T instance, {
-  String? instanceName,
-  bool? signalsReady,
-  DisposingFunc<T>? dispose,
-}) {
-  sl.registerSingleton<T>(
-    instance,
-    instanceName: instanceName,
-    signalsReady: signalsReady,
-    dispose: dispose,
+  // BLoCs
+  sl.registerFactory(
+    () => AuthBloc(
+      loginUseCase: sl(),
+      logoutUseCase: sl(),
+      refreshTokenUseCase: sl(),
+    ),
   );
 }

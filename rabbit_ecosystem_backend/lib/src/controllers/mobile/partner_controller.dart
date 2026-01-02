@@ -3,7 +3,8 @@ import 'package:shelf/shelf.dart';
 import '../../services/partner_service.dart';
 
 class PartnerController {
-  static final PartnerService _partnerService = PartnerService();
+  // TODO: Initialize with proper repositories
+  static final PartnerService _partnerService = PartnerService(null as dynamic, null as dynamic);
   
   static Future<Response> getPartners(Request request) async {
     try {
@@ -14,10 +15,8 @@ class PartnerController {
       final categoryId = int.tryParse(queryParams['categoryId'] ?? '');
       
       final partners = await _partnerService.getPartners(
-        page: page,
         limit: limit,
-        cityId: cityId,
-        categoryId: categoryId,
+        offset: (page - 1) * limit,
       );
       
       return Response.ok(

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:shelf/shelf.dart';
 import '../../services/wallet_service.dart';
 import '../../models/user.dart';
@@ -8,7 +9,7 @@ import '../base_controller.dart';
 class WalletManagementController extends BaseController {
   static final WalletService _walletService = WalletService(
     // These would be injected in real implementation
-    null, null, null,
+    null as dynamic, null as dynamic, null as dynamic,
   );
 
   /// GET /api/dashboard/wallets/statistics - Get wallet statistics
@@ -97,18 +98,10 @@ class WalletManagementController extends BaseController {
         return BaseController.forbidden();
       }
 
-      final userIdStr = request.params['userId'];
-      if (userIdStr == null) {
-        return BaseController.error(
-          message: 'User ID is required',
-          statusCode: HttpStatus.badRequest,
-        );
-      }
-
-      final userId = int.tryParse(userIdStr);
+      final userId = BaseController.getIdFromParams(request, 'userId');
       if (userId == null) {
         return BaseController.error(
-          message: 'Invalid user ID',
+          message: 'User ID is required',
           statusCode: HttpStatus.badRequest,
         );
       }
@@ -132,18 +125,10 @@ class WalletManagementController extends BaseController {
         return BaseController.forbidden();
       }
 
-      final userIdStr = request.params['userId'];
-      if (userIdStr == null) {
-        return BaseController.error(
-          message: 'User ID is required',
-          statusCode: HttpStatus.badRequest,
-        );
-      }
-
-      final userId = int.tryParse(userIdStr);
+      final userId = BaseController.getIdFromParams(request, 'userId');
       if (userId == null) {
         return BaseController.error(
-          message: 'Invalid user ID',
+          message: 'User ID is required',
           statusCode: HttpStatus.badRequest,
         );
       }
@@ -171,7 +156,7 @@ class WalletManagementController extends BaseController {
 
         if (statusFilter != null && statusFilter.isNotEmpty) {
           try {
-            filter = filter.copyWith(status: TransactionStatus.values.firstWhere(
+            filter = filter!.copyWith(status: TransactionStatus.values.firstWhere(
               (s) => s.name == statusFilter,
             ));
           } catch (e) {
@@ -204,18 +189,10 @@ class WalletManagementController extends BaseController {
         return BaseController.forbidden();
       }
 
-      final userIdStr = request.params['userId'];
-      if (userIdStr == null) {
-        return BaseController.error(
-          message: 'User ID is required',
-          statusCode: HttpStatus.badRequest,
-        );
-      }
-
-      final userId = int.tryParse(userIdStr);
+      final userId = BaseController.getIdFromParams(request, 'userId');
       if (userId == null) {
         return BaseController.error(
-          message: 'Invalid user ID',
+          message: 'User ID is required',
           statusCode: HttpStatus.badRequest,
         );
       }
@@ -256,18 +233,10 @@ class WalletManagementController extends BaseController {
         return BaseController.forbidden();
       }
 
-      final userIdStr = request.params['userId'];
-      if (userIdStr == null) {
-        return BaseController.error(
-          message: 'User ID is required',
-          statusCode: HttpStatus.badRequest,
-        );
-      }
-
-      final userId = int.tryParse(userIdStr);
+      final userId = BaseController.getIdFromParams(request, 'userId');
       if (userId == null) {
         return BaseController.error(
-          message: 'Invalid user ID',
+          message: 'User ID is required',
           statusCode: HttpStatus.badRequest,
         );
       }
@@ -325,18 +294,10 @@ class WalletManagementController extends BaseController {
         return BaseController.forbidden();
       }
 
-      final userIdStr = request.params['userId'];
-      if (userIdStr == null) {
-        return BaseController.error(
-          message: 'User ID is required',
-          statusCode: HttpStatus.badRequest,
-        );
-      }
-
-      final userId = int.tryParse(userIdStr);
+      final userId = BaseController.getIdFromParams(request, 'userId');
       if (userId == null) {
         return BaseController.error(
-          message: 'Invalid user ID',
+          message: 'User ID is required',
           statusCode: HttpStatus.badRequest,
         );
       }
@@ -464,3 +425,4 @@ class WalletManagementController extends BaseController {
     }
   }
 }
+

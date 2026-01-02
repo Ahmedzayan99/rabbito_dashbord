@@ -3,11 +3,12 @@ import 'package:shelf/shelf.dart';
 import '../../services/product_service.dart';
 
 class ProductController {
-  static final ProductService _productService = ProductService();
+  // TODO: Initialize with proper repositories
+  static final ProductService _productService = ProductService(null as dynamic, null as dynamic);
   
   static Future<Response> getPartnerProducts(Request request) async {
     try {
-      final partnerId = int.tryParse(request.params['partnerId'] ?? '');
+      final partnerId = int.tryParse(request.url.queryParameters['partnerId'] ?? '');
       
       if (partnerId == null) {
         return Response.badRequest(
@@ -21,11 +22,10 @@ class ProductController {
       final limit = int.tryParse(queryParams['limit'] ?? '20') ?? 20;
       final categoryId = int.tryParse(queryParams['categoryId'] ?? '');
       
-      final products = await _productService.getPartnerProducts(
+      final products = await _productService.getProductsByPartner(
         partnerId,
-        page: page,
         limit: limit,
-        categoryId: categoryId,
+        offset: (page - 1) * limit,
       );
       
       return Response.ok(
@@ -46,7 +46,7 @@ class ProductController {
   
   static Future<Response> getProduct(Request request) async {
     try {
-      final productId = int.tryParse(request.params['productId'] ?? '');
+      final productId = int.tryParse(request.url.queryParameters['productId'] ?? '');
       
       if (productId == null) {
         return Response.badRequest(

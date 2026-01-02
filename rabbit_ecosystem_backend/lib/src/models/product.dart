@@ -4,7 +4,8 @@ part 'product.g.dart';
 
 enum ProductStatus {
   active('active'),
-  inactive('inactive');
+  inactive('inactive'),
+  outOfStock('out_of_stock');
 
   const ProductStatus(this.value);
   final String value;
@@ -26,7 +27,9 @@ class Product {
   final String? nameAr;
   final String? shortDescription;
   final String? description;
+  final String? longDescription;
   final String? image;
+  final List<String>? images;
   final ProductStatus status;
   final double rating;
   final int numberOfRatings;
@@ -36,6 +39,11 @@ class Product {
   final int sortOrder;
   final List<ProductVariant> variants;
   final List<ProductAddon> addons;
+  final List<String>? allergens;
+  final List<String>? tags;
+  final int? preparationTime;
+  final int? calories;
+  final List<String>? ingredients;
   final DateTime createdAt;
   final DateTime? updatedAt;
 
@@ -47,7 +55,9 @@ class Product {
     this.nameAr,
     this.shortDescription,
     this.description,
+    this.longDescription,
     this.image,
+    this.images,
     this.status = ProductStatus.active,
     this.rating = 0.0,
     this.numberOfRatings = 0,
@@ -57,12 +67,52 @@ class Product {
     this.sortOrder = 0,
     this.variants = const [],
     this.addons = const [],
+    this.allergens,
+    this.tags,
+    this.preparationTime,
+    this.calories,
+    this.ingredients,
     required this.createdAt,
     this.updatedAt,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) => _$ProductFromJson(json);
   Map<String, dynamic> toJson() => _$ProductToJson(this);
+
+  /// Factory constructor from database map
+  factory Product.fromMap(Map<String, dynamic> map) {
+    return Product(
+      id: map['id'] as int,
+      partnerId: map['partner_id'] as int,
+      categoryId: map['category_id'] as int,
+      name: map['name'] as String,
+      nameAr: map['name_ar'] as String?,
+      shortDescription: map['short_description'] as String,
+      description: map['description'] as String?,
+      longDescription: map['long_description'] as String?,
+      image: map['image'] as String?,
+      images: (map['images'] as List<dynamic>?)?.cast<String>(),
+      status: ProductStatus.values.firstWhere(
+        (status) => status.name == map['status'],
+        orElse: () => ProductStatus.active,
+      ),
+      rating: (map['rating'] as num?)?.toDouble() ?? 0.0,
+      numberOfRatings: map['number_of_ratings'] as int? ?? 0,
+      basePrice: (map['base_price'] as num).toDouble(),
+      discountedPrice: (map['discounted_price'] as num?)?.toDouble(),
+      isFeatured: map['is_featured'] as bool? ?? false,
+      sortOrder: map['sort_order'] as int? ?? 0,
+      variants: [], // Would need to be populated separately
+      addons: [], // Would need to be populated separately
+      preparationTime: map['preparation_time'] as int?,
+      calories: map['calories'] as int?,
+      ingredients: (map['ingredients'] as List<dynamic>?)?.cast<String>(),
+      createdAt: DateTime.parse(map['created_at'] as String),
+      updatedAt: map['updated_at'] != null
+          ? DateTime.parse(map['updated_at'] as String)
+          : null,
+    );
+  }
 
   Product copyWith({
     int? id,
@@ -72,7 +122,9 @@ class Product {
     String? nameAr,
     String? shortDescription,
     String? description,
+    String? longDescription,
     String? image,
+    List<String>? images,
     ProductStatus? status,
     double? rating,
     int? numberOfRatings,
@@ -82,6 +134,9 @@ class Product {
     int? sortOrder,
     List<ProductVariant>? variants,
     List<ProductAddon>? addons,
+    int? preparationTime,
+    int? calories,
+    List<String>? ingredients,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -93,7 +148,9 @@ class Product {
       nameAr: nameAr ?? this.nameAr,
       shortDescription: shortDescription ?? this.shortDescription,
       description: description ?? this.description,
+      longDescription: longDescription ?? this.longDescription,
       image: image ?? this.image,
+      images: images ?? this.images,
       status: status ?? this.status,
       rating: rating ?? this.rating,
       numberOfRatings: numberOfRatings ?? this.numberOfRatings,
@@ -103,6 +160,9 @@ class Product {
       sortOrder: sortOrder ?? this.sortOrder,
       variants: variants ?? this.variants,
       addons: addons ?? this.addons,
+      preparationTime: preparationTime ?? this.preparationTime,
+      calories: calories ?? this.calories,
+      ingredients: ingredients ?? this.ingredients,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );

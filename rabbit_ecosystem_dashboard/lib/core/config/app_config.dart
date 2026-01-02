@@ -126,3 +126,4 @@ class AppConfig {
   static const int maxRequestsPerMinute = 60;
   static const Duration rateLimitWindow = Duration(minutes: 1);
 }
+

@@ -3,9 +3,10 @@ import 'package:shelf/shelf.dart';
 import '../../services/order_service.dart';
 import '../../models/order.dart';
 import '../base_controller.dart';
+import 'dart:io';
 
 class OrderManagementController extends BaseController {
-  static final OrderService _orderService = OrderService();
+  static final OrderService _orderService = OrderService(null as dynamic, null as dynamic, null as dynamic, null as dynamic);
 
   /// GET /api/dashboard/orders - Get all orders with filters
   static Future<Response> getOrders(Request request) async {
@@ -45,9 +46,9 @@ class OrderManagementController extends BaseController {
           ? DateTime.tryParse(queryParams['end_date']!)
           : null;
 
-      final orders = await _orderService.getAllOrders(
-        page: pagination['page']!,
-        limit: pagination['limit']!,
+      final orders = await _orderService.getAllOrdersWithFilters(
+        page: pagination['page'] as int,
+        limit: pagination['limit'] as int,
         status: status,
         partnerId: partnerId,
         riderId: riderId,
@@ -83,18 +84,10 @@ class OrderManagementController extends BaseController {
         return BaseController.forbidden();
       }
 
-      final orderIdStr = request.params['orderId'];
-      if (orderIdStr == null) {
-        return BaseController.error(
-          message: 'Order ID is required',
-          statusCode: HttpStatus.badRequest,
-        );
-      }
-
-      final orderId = int.tryParse(orderIdStr);
+      final orderId = BaseController.getIdFromParams(request, 'orderId');
       if (orderId == null) {
         return BaseController.error(
-          message: 'Invalid order ID',
+          message: 'Order ID is required',
           statusCode: HttpStatus.badRequest,
         );
       }
@@ -121,18 +114,10 @@ class OrderManagementController extends BaseController {
         return BaseController.forbidden();
       }
 
-      final orderIdStr = request.params['orderId'];
-      if (orderIdStr == null) {
-        return BaseController.error(
-          message: 'Order ID is required',
-          statusCode: HttpStatus.badRequest,
-        );
-      }
-
-      final orderId = int.tryParse(orderIdStr);
+      final orderId = BaseController.getIdFromParams(request, 'orderId');
       if (orderId == null) {
         return BaseController.error(
-          message: 'Invalid order ID',
+          message: 'Order ID is required',
           statusCode: HttpStatus.badRequest,
         );
       }
@@ -158,8 +143,7 @@ class OrderManagementController extends BaseController {
       final updatedOrder = await _orderService.updateOrderStatus(
         orderId,
         status,
-        notes: notes,
-        updatedBy: user!.id,
+        userId: user!.id,
       );
 
       if (updatedOrder == null) {
@@ -183,18 +167,10 @@ class OrderManagementController extends BaseController {
         return BaseController.forbidden();
       }
 
-      final orderIdStr = request.params['orderId'];
-      if (orderIdStr == null) {
-        return BaseController.error(
-          message: 'Order ID is required',
-          statusCode: HttpStatus.badRequest,
-        );
-      }
-
-      final orderId = int.tryParse(orderIdStr);
+      final orderId = BaseController.getIdFromParams(request, 'orderId');
       if (orderId == null) {
         return BaseController.error(
-          message: 'Invalid order ID',
+          message: 'Order ID is required',
           statusCode: HttpStatus.badRequest,
         );
       }
@@ -206,13 +182,9 @@ class OrderManagementController extends BaseController {
       }
 
       final riderId = body!['rider_id'] as int;
-      final notes = body['notes'] as String?;
-
       final updatedOrder = await _orderService.assignRiderToOrder(
         orderId,
         riderId,
-        assignedBy: user!.id,
-        notes: notes,
       );
 
       if (updatedOrder == null) {
@@ -270,18 +242,10 @@ class OrderManagementController extends BaseController {
         return BaseController.forbidden();
       }
 
-      final orderIdStr = request.params['orderId'];
-      if (orderIdStr == null) {
-        return BaseController.error(
-          message: 'Order ID is required',
-          statusCode: HttpStatus.badRequest,
-        );
-      }
-
-      final orderId = int.tryParse(orderIdStr);
+      final orderId = BaseController.getIdFromParams(request, 'orderId');
       if (orderId == null) {
         return BaseController.error(
-          message: 'Invalid order ID',
+          message: 'Order ID is required',
           statusCode: HttpStatus.badRequest,
         );
       }
@@ -297,9 +261,8 @@ class OrderManagementController extends BaseController {
 
       final cancelledOrder = await _orderService.cancelOrder(
         orderId,
-        reason: reason,
-        cancelledBy: user!.id,
-        notes: notes,
+        reason,
+        userId: user!.id,
       );
 
       if (cancelledOrder == null) {
@@ -324,7 +287,7 @@ class OrderManagementController extends BaseController {
       }
 
       final limit = int.tryParse(request.url.queryParameters['limit'] ?? '10') ?? 10;
-      final orders = await _orderService.getRecentOrders(limit: limit);
+      final orders = await _orderService.getAllOrders(limit: limit);
 
       return BaseController.success(
         data: orders.map((o) => o.toJson()).toList(),

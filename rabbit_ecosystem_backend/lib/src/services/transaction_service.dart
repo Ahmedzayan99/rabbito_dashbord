@@ -1,9 +1,12 @@
 import 'dart:async';
+import 'package:rabbit_ecosystem_backend/src/models/payment.dart';
+
 import '../repositories/transaction_repository.dart';
 import '../repositories/user_repository.dart';
 import '../repositories/order_repository.dart';
 import '../models/transaction.dart';
 import '../models/user.dart';
+import '../models/order.dart';
 
 /// Service for transaction-related business logic
 class TransactionService {
@@ -28,8 +31,8 @@ class TransactionService {
 
       // Validate order if provided
       if (request.orderId != null) {
-        final orderExists = await _orderRepository.orderExists(request.orderId!);
-        if (!orderExists) {
+        final order = await _orderRepository.findById(request.orderId!);
+        if (order == null) {
           throw Exception('Order not found');
         }
       }
@@ -60,7 +63,7 @@ class TransactionService {
           break;
       }
 
-      return await _transactionRepository.create(request);
+      return await _transactionRepository.create(request.toJson());
     } catch (e) {
       throw Exception('Failed to create transaction: ${e.toString()}');
     }
@@ -380,3 +383,4 @@ class TransactionService {
     };
   }
 }
+

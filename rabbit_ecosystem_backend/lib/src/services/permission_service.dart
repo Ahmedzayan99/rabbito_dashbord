@@ -94,6 +94,12 @@ class PermissionService {
         return 80;
       case UserRole.finance:
         return 60;
+      case UserRole.dispatcher:
+        return 50;
+      case UserRole.marketing:
+        return 45;
+      case UserRole.analytics:
+        return 45;
       case UserRole.support:
         return 40;
       case UserRole.partner:

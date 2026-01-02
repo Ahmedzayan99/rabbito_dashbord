@@ -1,11 +1,13 @@
-import '../../../core/storage/local_storage.dart';
-import '../../../core/config/app_config.dart';
+import 'package:rabbit_ecosystem_dashboard/core/config/app_config.dart';
+import 'package:rabbit_ecosystem_dashboard/core/storage/local_storage.dart';
 
 abstract class AuthLocalDataSource {
   Future<String?> getToken();
   Future<String?> getRefreshToken();
+  Future<String?> getUserRole();
   Future<void> saveToken(String token);
   Future<void> saveRefreshToken(String refreshToken);
+  Future<void> saveUserRole(String role);
   Future<void> clearTokens();
 }
 
@@ -25,6 +27,11 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   }
 
   @override
+  Future<String?> getUserRole() async {
+    return await localStorage.getString(AppConfig.userDataKey);
+  }
+
+  @override
   Future<void> saveToken(String token) async {
     await localStorage.setString(AppConfig.authTokenKey, token);
   }
@@ -35,8 +42,15 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   }
 
   @override
+  Future<void> saveUserRole(String role) async {
+    await localStorage.setString(AppConfig.userDataKey, role);
+  }
+
+  @override
   Future<void> clearTokens() async {
     await localStorage.remove(AppConfig.authTokenKey);
     await localStorage.remove(AppConfig.refreshTokenKey);
+    await localStorage.remove(AppConfig.userDataKey);
   }
 }
+

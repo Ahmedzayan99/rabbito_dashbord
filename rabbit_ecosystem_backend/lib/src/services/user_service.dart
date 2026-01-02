@@ -365,6 +365,27 @@ class UserService {
     return await _userRepository.findByUuid(uuid);
   }
 
+  /// Create a new user (admin function)
+  Future<User?> createUser(User user, String password) async {
+    try {
+      // Hash the password
+      final hashedPassword = _jwtService.hashPassword(password);
+
+      // Create user in database
+      final createdUser = await _userRepository.createUser(
+        mobile: user.mobile,
+        password: hashedPassword,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+      );
+
+      return createdUser;
+    } catch (e) {
+      return null;
+    }
+  }
+
   /// Validate user permissions for action
   bool canUserPerformAction(User user, String action) {
     return user.role.hasPermission(action);

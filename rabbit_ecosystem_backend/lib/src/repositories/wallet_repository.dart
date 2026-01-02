@@ -1,10 +1,25 @@
 import 'dart:async';
 import 'package:postgres/postgres.dart';
 import '../models/transaction.dart';
+import '../models/user.dart';
+import '../models/payment.dart';
 import 'base_repository.dart';
 
-class WalletRepository extends BaseRepository {
-  WalletRepository(PostgreSQLConnection connection) : super(connection);
+class WalletRepository extends BaseRepository<Map<String, dynamic>> {
+  WalletRepository(super.connection);
+
+  @override
+  String get tableName => 'users'; // Primary table for wallet operations
+
+  @override
+  Map<String, dynamic> fromMap(Map<String, dynamic> map) {
+    return map; // Return as-is since we work with raw maps
+  }
+
+  @override
+  Map<String, dynamic> toMap(Map<String, dynamic> model) {
+    return model; // Return as-is since we work with raw maps
+  }
 
   /// Get user wallet balance
   Future<double> getBalance(int userId) async {

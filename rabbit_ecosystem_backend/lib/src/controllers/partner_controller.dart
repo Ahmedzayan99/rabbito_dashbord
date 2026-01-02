@@ -177,14 +177,14 @@ class PartnerController extends BaseController {
       }
 
       // Update partner
-      final updatedPartner = await _partnerService.updatePartner(
+      final updatedPartner = await _partnerService.updatePartnerProfile(
         partnerId,
-        name: body['name'] as String?,
-        mobile: mobile,
+        businessName: body['name'] as String?,
+        phone: mobile,
         email: email,
         address: body['address'] as String?,
         description: body['description'] as String?,
-        logoUrl: body['logo_url'] as String?,
+        logo: body['logo_url'] as String?,
         businessLicense: body['business_license'] as String?,
       );
 
@@ -247,7 +247,6 @@ class PartnerController extends BaseController {
       final updatedPartner = await _partnerService.updatePartnerStatus(
         partnerId,
         status,
-        reason: body!['reason'] as String?,
       );
 
       if (updatedPartner == null) {
@@ -365,7 +364,7 @@ class PartnerController extends BaseController {
         offset: pagination['offset'],
       );
 
-      final ordersJson = orders.map((o) => o.toJson()).toList();
+      final ordersJson = orders;
 
       return BaseController.paginated(
         data: ordersJson,
@@ -551,9 +550,9 @@ class PartnerController extends BaseController {
       final pagination = BaseController.getPaginationParams(request);
       
       final partners = await _partnerService.getNearbyPartners(
-        latitude: latitude,
-        longitude: longitude,
-        radius: radius,
+        latitude,
+        longitude,
+        maxDistance: radius,
         limit: pagination['limit'],
         offset: pagination['offset'],
       );

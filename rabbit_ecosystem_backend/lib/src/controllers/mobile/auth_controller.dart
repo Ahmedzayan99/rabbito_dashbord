@@ -4,7 +4,10 @@ import '../../services/auth_service.dart';
 import '../../models/user.dart';
 
 class AuthController {
-  static final AuthService _authService = AuthService();
+  static final AuthService _authService = AuthService(
+    userRepository: null as dynamic,
+    refreshTokenRepository: null as dynamic,
+  );
   
   static Future<Response> login(Request request) async {
     try {

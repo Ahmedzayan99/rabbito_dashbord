@@ -1,5 +1,6 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'order.dart';
+import 'payment.dart';
 
 part 'transaction.g.dart';
 
@@ -326,6 +327,7 @@ class CreateTransactionRequest {
   final String? description;
   final String? referenceId;
   final PaymentMethod? paymentMethod;
+  final TransactionStatus status;
 
   const CreateTransactionRequest({
     required this.userId,
@@ -335,6 +337,7 @@ class CreateTransactionRequest {
     this.description,
     this.referenceId,
     this.paymentMethod,
+    this.status = TransactionStatus.pending,
   });
 
   factory CreateTransactionRequest.fromJson(Map<String, dynamic> json) => _$CreateTransactionRequestFromJson(json);
@@ -409,4 +412,24 @@ class TransactionFilter {
 
   factory TransactionFilter.fromJson(Map<String, dynamic> json) => _$TransactionFilterFromJson(json);
   Map<String, dynamic> toJson() => _$TransactionFilterToJson(this);
+
+  TransactionFilter copyWith({
+    int? userId,
+    TransactionType? type,
+    TransactionStatus? status,
+    DateTime? startDate,
+    DateTime? endDate,
+    double? minAmount,
+    double? maxAmount,
+  }) {
+    return TransactionFilter(
+      userId: userId ?? this.userId,
+      type: type ?? this.type,
+      status: status ?? this.status,
+      startDate: startDate ?? this.startDate,
+      endDate: endDate ?? this.endDate,
+      minAmount: minAmount ?? this.minAmount,
+      maxAmount: maxAmount ?? this.maxAmount,
+    );
+  }
 }

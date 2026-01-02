@@ -4,6 +4,7 @@ import '../repositories/user_repository.dart';
 import '../services/firebase_service.dart';
 import '../models/notification.dart';
 import '../models/user.dart';
+import '../models/user_role.dart';
 
 /// Service for handling notifications and push messages
 class NotificationService {
@@ -12,10 +13,12 @@ class NotificationService {
   final FirebaseService _firebaseService;
 
   NotificationService(
-    this._notificationRepository,
-    this._userRepository,
-    this._firebaseService,
-  );
+    NotificationRepository? notificationRepository,
+    UserRepository? userRepository,
+    FirebaseService? firebaseService,
+  ) : _notificationRepository = notificationRepository ?? NotificationRepository(null as dynamic),
+      _userRepository = userRepository ?? UserRepository(null as dynamic),
+      _firebaseService = firebaseService ?? FirebaseService();
 
   /// Send notification to user
   Future<bool> sendNotification({
@@ -27,13 +30,13 @@ class NotificationService {
   }) async {
     try {
       // Create notification record
-      final notification = await _notificationRepository.create(CreateNotificationRequest(
+      final notification = await _notificationRepository.createNotification(
         userId: userId,
         title: title,
         body: body,
         type: type,
         data: data,
-      ));
+      );
 
       // Get user device token (assuming it's stored in user profile)
       final user = await _userRepository.findById(userId);
@@ -79,11 +82,11 @@ class NotificationService {
     final fcmToken = await _getUserFCMToken(userId);
     if (fcmToken == null) {
       // Save notification without sending push
-      await _notificationRepository.create(CreateNotificationRequest(
+      await _notificationRepository.createNotificationFromRequest(CreateNotificationRequest(
         userId: userId,
         title: 'Order Update',
-        body: 'Hi $customerName, your order #$orderId status has been updated to: $status',
-        type: 'order_status_update',
+        message: 'Hi $customerName, your order #$orderId status has been updated to: $status',
+        type: NotificationType.orderUpdate,
         data: {
           'order_id': orderId.toString(),
           'status': status,
@@ -109,11 +112,11 @@ class NotificationService {
   }) async {
     final fcmToken = await _getUserFCMToken(userId);
     if (fcmToken == null) {
-      await _notificationRepository.create(CreateNotificationRequest(
+      await _notificationRepository.createNotificationFromRequest(CreateNotificationRequest(
         userId: userId,
         title: 'Rider Assigned',
-        body: '$riderName has been assigned to deliver your order #$orderId. Estimated delivery: $estimatedTime',
-        type: 'rider_assigned',
+        message: '$riderName has been assigned to deliver your order #$orderId. Estimated delivery: $estimatedTime',
+        type: NotificationType.delivery,
         data: {
           'order_id': orderId.toString(),
           'rider_name': riderName,
@@ -140,11 +143,11 @@ class NotificationService {
   }) async {
     final fcmToken = await _getUserFCMToken(partnerId);
     if (fcmToken == null) {
-      await _notificationRepository.create(CreateNotificationRequest(
+      await _notificationRepository.createNotificationFromRequest(CreateNotificationRequest(
         userId: partnerId,
         title: 'New Order',
         body: 'You have received a new order #$orderId from $customerName for SAR ${orderAmount.toStringAsFixed(2)}',
-        type: 'new_order',
+        type: NotificationType.orderUpdate,
         data: {
           'order_id': orderId.toString(),
           'customer_name': customerName,
@@ -172,11 +175,11 @@ class NotificationService {
   }) async {
     final fcmToken = await _getUserFCMToken(userId);
     if (fcmToken == null) {
-      await _notificationRepository.create(CreateNotificationRequest(
+      await _notificationRepository.createNotificationFromRequest(CreateNotificationRequest(
         userId: userId,
         title: title,
         body: body,
-        type: 'promotion',
+        type: NotificationType.general,
         data: data,
       ));
       return true;
@@ -200,11 +203,11 @@ class NotificationService {
   }) async {
     final fcmToken = await _getUserFCMToken(userId);
     if (fcmToken == null) {
-      await _notificationRepository.create(CreateNotificationRequest(
+      await _notificationRepository.createNotificationFromRequest(CreateNotificationRequest(
         userId: userId,
         title: title,
         body: body,
-        type: 'system_alert',
+        type: NotificationType.general,
         data: data,
       ));
       return true;
@@ -255,6 +258,24 @@ class NotificationService {
       offset: offset,
       onlyUnread: onlyUnread,
     );
+  }
+
+  /// Get all notifications (admin)
+  Future<List<Notification>> getNotifications({
+    int? limit,
+    int? offset,
+    String? type,
+  }) async {
+    return await _notificationRepository.findAll(
+      limit: limit,
+      offset: offset,
+      type: type,
+    );
+  }
+
+  /// Get notification by ID
+  Future<Notification?> getNotificationById(int id) async {
+    return await _notificationRepository.findById(id);
   }
 
   /// Mark notification as read
@@ -311,7 +332,7 @@ class NotificationService {
   }
 
   /// Send targeted notifications based on user segment
-  Future<Map<String, bool>> sendTargetedNotification({
+  Future<Map<int, bool>> sendTargetedNotification({
     required UserSegment segment,
     required String title,
     required String body,

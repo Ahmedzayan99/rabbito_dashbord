@@ -9,3 +9,4 @@ class GetDashboardStatsUseCase {
     return await repository.getDashboardStats();
   }
 }
+

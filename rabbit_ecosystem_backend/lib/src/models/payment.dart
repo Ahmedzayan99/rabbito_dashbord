@@ -4,23 +4,44 @@ part 'payment.g.dart';
 
 /// Payment method enum
 enum PaymentMethod {
-  cash,
-  wallet,
-  card,
-  online,
+  cash('cash'),
+  wallet('wallet'),
+  card('card'),
+  online('online');
+
+  const PaymentMethod(this.value);
+  final String value;
+
+  static PaymentMethod fromString(String value) {
+    return PaymentMethod.values.firstWhere(
+      (method) => method.value == value,
+      orElse: () => PaymentMethod.cash,
+    );
+  }
 }
 
 /// Payment status enum
 enum PaymentStatus {
-  pending,
-  processing,
-  completed,
-  failed,
-  cancelled,
-  refunded,
+  pending('pending'),
+  processing('processing'),
+  completed('completed'),
+  failed('failed'),
+  cancelled('cancelled'),
+  refunded('refunded');
+
+  const PaymentStatus(this.value);
+  final String value;
+
+  static PaymentStatus fromString(String value) {
+    return PaymentStatus.values.firstWhere(
+      (status) => status.value == value,
+      orElse: () => PaymentStatus.pending,
+    );
+  }
 }
 
 /// Payment model
+@JsonSerializable()
 class Payment {
   final int id;
   final int orderId;
@@ -29,15 +50,16 @@ class Payment {
   final PaymentMethod paymentMethod;
   final String transactionId;
   final PaymentStatus status;
+  final DateTime? paidAt;
   final DateTime createdAt;
-  final DateTime updatedAt;
+  final DateTime? updatedAt;
 
   // Additional information (populated from joins)
   final String? orderUuid;
   final String? username;
   final String? mobile;
 
-  Payment({
+  const Payment({
     required this.id,
     required this.orderId,
     required this.userId,
@@ -45,12 +67,16 @@ class Payment {
     required this.paymentMethod,
     required this.transactionId,
     required this.status,
+    this.paidAt,
     required this.createdAt,
-    required this.updatedAt,
+    this.updatedAt,
     this.orderUuid,
     this.username,
     this.mobile,
   });
+
+  factory Payment.fromJson(Map<String, dynamic> json) => _$PaymentFromJson(json);
+  Map<String, dynamic> toJson() => _$PaymentToJson(this);
 
   /// Factory constructor from database map
   factory Payment.fromMap(Map<String, dynamic> map) {
@@ -66,6 +92,7 @@ class Payment {
       status: PaymentStatus.values.firstWhere(
         (status) => status.name == map['status'],
       ),
+      paidAt: map['paid_at'] != null ? DateTime.parse(map['paid_at'] as String) : null,
       createdAt: DateTime.parse(map['created_at'] as String),
       updatedAt: DateTime.parse(map['updated_at'] as String),
       orderUuid: map['order_uuid'] as String?,
@@ -74,23 +101,6 @@ class Payment {
     );
   }
 
-  /// Convert to JSON
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'order_id': orderId,
-      'user_id': userId,
-      'amount': amount,
-      'payment_method': paymentMethod.name,
-      'transaction_id': transactionId,
-      'status': status.name,
-      'order_uuid': orderUuid,
-      'username': username,
-      'mobile': mobile,
-      'created_at': createdAt.toIso8601String(),
-      'updated_at': updatedAt.toIso8601String(),
-    };
-  }
 }
 
 /// Refund model

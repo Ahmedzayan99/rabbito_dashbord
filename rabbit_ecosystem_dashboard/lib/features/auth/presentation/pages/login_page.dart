@@ -6,35 +6,6 @@ import '../../../../core/di/injection_container.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../bloc/auth_bloc.dart';
 
-// Auth BLoC Events and States (simplified for this example)
-abstract class AuthEvent {}
-
-class AuthLoginRequested extends AuthEvent {
-  final String email;
-  final String password;
-  final bool rememberMe;
-
-  AuthLoginRequested({
-    required this.email,
-    required this.password,
-    this.rememberMe = false,
-  });
-}
-
-abstract class AuthState {}
-
-class AuthInitial extends AuthState {}
-
-class AuthLoading extends AuthState {}
-
-class AuthSuccess extends AuthState {}
-
-class AuthFailure extends AuthState {
-  final String message;
-
-  AuthFailure(this.message);
-}
-
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -58,8 +29,8 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider.value(
-      value: sl<AuthBloc>(),
+    return BlocProvider(
+      create: (context) => sl<AuthBloc>(),
       child: Scaffold(
         body: Container(
           decoration: BoxDecoration(
@@ -87,7 +58,8 @@ class _LoginPageState extends State<LoginPage> {
                     child: BlocConsumer<AuthBloc, AuthState>(
                       listener: (context, state) {
                         if (state is AuthSuccess) {
-                          // Navigate to dashboard
+                          // Navigate to dashboard based on role
+                          // For now, all dashboard users go to the same dashboard
                           Navigator.of(context).pushReplacementNamed('/dashboard');
                         } else if (state is AuthFailure) {
                           ScaffoldMessenger.of(context).showSnackBar(
@@ -354,31 +326,3 @@ class _LoginPageState extends State<LoginPage> {
   }
 }
 
-// Auth BLoC Events and States (simplified for this example)
-abstract class AuthEvent {}
-
-class AuthLoginRequested extends AuthEvent {
-  final String email;
-  final String password;
-  final bool rememberMe;
-
-  AuthLoginRequested({
-    required this.email,
-    required this.password,
-    this.rememberMe = false,
-  });
-}
-
-abstract class AuthState {}
-
-class AuthInitial extends AuthState {}
-
-class AuthLoading extends AuthState {}
-
-class AuthSuccess extends AuthState {}
-
-class AuthFailure extends AuthState {
-  final String message;
-
-  AuthFailure(this.message);
-}

@@ -3,33 +3,28 @@ import 'package:json_annotation/json_annotation.dart';
 part 'cart.g.dart';
 
 /// Cart model containing cart items
+@JsonSerializable()
 class Cart {
   final int userId;
   final List<CartItem> items;
 
-  Cart({
+  const Cart({
     required this.userId,
     required this.items,
   });
+
+  factory Cart.fromJson(Map<String, dynamic> json) => _$CartFromJson(json);
+  Map<String, dynamic> toJson() => _$CartToJson(this);
 
   /// Calculate total items count
   int get totalItems => items.fold(0, (sum, item) => sum + item.quantity);
 
   /// Calculate subtotal
   double get subtotal => items.fold(0.0, (sum, item) => sum + item.totalPrice);
-
-  /// Convert to JSON
-  Map<String, dynamic> toJson() {
-    return {
-      'user_id': userId,
-      'items': items.map((item) => item.toJson()).toList(),
-      'total_items': totalItems,
-      'subtotal': subtotal,
-    };
-  }
 }
 
 /// Cart item model
+@JsonSerializable()
 class CartItem {
   final int id;
   final int userId;
@@ -47,7 +42,7 @@ class CartItem {
   final String? variantName;
   final double? unitPrice;
 
-  CartItem({
+  const CartItem({
     required this.id,
     required this.userId,
     required this.productId,
@@ -62,6 +57,9 @@ class CartItem {
     this.variantName,
     this.unitPrice,
   });
+
+  factory CartItem.fromJson(Map<String, dynamic> json) => _$CartItemFromJson(json);
+  Map<String, dynamic> toJson() => _$CartItemToJson(this);
 
   /// Calculate total price for this item
   double get totalPrice => (unitPrice ?? 0.0) * quantity;
@@ -85,25 +83,6 @@ class CartItem {
     );
   }
 
-  /// Convert to JSON
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'user_id': userId,
-      'product_id': productId,
-      'variant_id': variantId,
-      'quantity': quantity,
-      'special_instructions': specialInstructions,
-      'is_saved_for_later': isSavedForLater,
-      'product_name': productName,
-      'product_image': productImage,
-      'variant_name': variantName,
-      'unit_price': unitPrice,
-      'total_price': totalPrice,
-      'created_at': createdAt.toIso8601String(),
-      'updated_at': updatedAt.toIso8601String(),
-    };
-  }
 
   /// Copy with method
   CartItem copyWith({

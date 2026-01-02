@@ -4,6 +4,8 @@ import '../repositories/user_repository.dart';
 import '../repositories/transaction_repository.dart';
 import '../models/user.dart';
 import '../models/transaction.dart';
+import '../models/payment.dart';
+import '../models/user_role.dart';
 
 /// Service for wallet-related business logic
 class WalletService {
@@ -55,7 +57,7 @@ class WalletService {
       }
 
       // Create transaction first
-      final transaction = await _transactionRepository.create(CreateTransactionRequest(
+      final transaction = await _transactionRepository.createTransaction(CreateTransactionRequest(
         userId: userId,
         type: TransactionType.walletTopup,
         amount: amount,
@@ -113,7 +115,7 @@ class WalletService {
       }
 
       // Create transaction
-      final transaction = await _transactionRepository.create(CreateTransactionRequest(
+      final transaction = await _transactionRepository.createTransaction(CreateTransactionRequest(
         userId: userId,
         type: TransactionType.withdrawal,
         amount: amount,
@@ -383,3 +385,4 @@ class WalletService {
     }
   }
 }
+

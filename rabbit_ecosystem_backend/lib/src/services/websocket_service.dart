@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:rabbit_ecosystem_backend/src/models/user_role.dart';
+
 import '../models/user.dart';
 import '../models/order.dart';
 import '../models/notification.dart';
@@ -392,7 +394,7 @@ class WebSocketService {
         'customerId': order.customerId.toString(),
         'partnerId': order.partnerId.toString(),
         'riderId': order.riderId?.toString(),
-        'updatedAt': order.updatedAt.toIso8601String(),
+        'updatedAt': order.updatedAt?.toIso8601String(),
       },
     );
 
@@ -446,10 +448,10 @@ class WebSocketService {
       data: {
         'notificationId': notification.id.toString(),
         'title': notification.title,
-        'body': notification.body,
-        'type': notification.type,
+        'body': notification.message,
+        'type': notification.type.name,
         'data': notification.data,
-        'sentAt': notification.sentAt.toIso8601String(),
+        'sentAt': notification.createdAt.toIso8601String(),
       },
       userId: userId,
     );
@@ -546,3 +548,4 @@ class WebSocketService {
     return _userSessions.keys.toList();
   }
 }
+

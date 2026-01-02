@@ -7,25 +7,25 @@ part of 'user.dart';
 // **************************************************************************
 
 User _$UserFromJson(Map<String, dynamic> json) => User(
-      id: json['id'] as int,
+      id: (json['id'] as num).toInt(),
       uuid: json['uuid'] as String,
       username: json['username'] as String?,
       email: json['email'] as String?,
       mobile: json['mobile'] as String,
-      role: UserRole.fromString(json['role'] as String),
+      role: $enumDecode(_$UserRoleEnumMap, json['role']),
       balance: (json['balance'] as num?)?.toDouble() ?? 0.0,
       rating: (json['rating'] as num?)?.toDouble() ?? 0.0,
-      numberOfRatings: json['number_of_ratings'] as int? ?? 0,
-      isActive: json['is_active'] as bool? ?? true,
-      emailVerified: json['email_verified'] as bool? ?? false,
-      mobileVerified: json['mobile_verified'] as bool? ?? false,
-      lastLogin: json['last_login'] == null
+      numberOfRatings: (json['numberOfRatings'] as num?)?.toInt() ?? 0,
+      isActive: json['isActive'] as bool? ?? true,
+      emailVerified: json['emailVerified'] as bool? ?? false,
+      mobileVerified: json['mobileVerified'] as bool? ?? false,
+      lastLogin: json['lastLogin'] == null
           ? null
-          : DateTime.parse(json['last_login'] as String),
-      createdAt: DateTime.parse(json['created_at'] as String),
-      updatedAt: json['updated_at'] == null
+          : DateTime.parse(json['lastLogin'] as String),
+      createdAt: DateTime.parse(json['createdAt'] as String),
+      updatedAt: json['updatedAt'] == null
           ? null
-          : DateTime.parse(json['updated_at'] as String),
+          : DateTime.parse(json['updatedAt'] as String),
     );
 
 Map<String, dynamic> _$UserToJson(User instance) => <String, dynamic>{
@@ -34,17 +34,30 @@ Map<String, dynamic> _$UserToJson(User instance) => <String, dynamic>{
       'username': instance.username,
       'email': instance.email,
       'mobile': instance.mobile,
-      'role': instance.role.value,
+      'role': _$UserRoleEnumMap[instance.role]!,
       'balance': instance.balance,
       'rating': instance.rating,
-      'number_of_ratings': instance.numberOfRatings,
-      'is_active': instance.isActive,
-      'email_verified': instance.emailVerified,
-      'mobile_verified': instance.mobileVerified,
-      'last_login': instance.lastLogin?.toIso8601String(),
-      'created_at': instance.createdAt.toIso8601String(),
-      'updated_at': instance.updatedAt?.toIso8601String(),
+      'numberOfRatings': instance.numberOfRatings,
+      'isActive': instance.isActive,
+      'emailVerified': instance.emailVerified,
+      'mobileVerified': instance.mobileVerified,
+      'lastLogin': instance.lastLogin?.toIso8601String(),
+      'createdAt': instance.createdAt.toIso8601String(),
+      'updatedAt': instance.updatedAt?.toIso8601String(),
     };
+
+const _$UserRoleEnumMap = {
+  UserRole.customer: 'customer',
+  UserRole.partner: 'partner',
+  UserRole.rider: 'rider',
+  UserRole.dispatcher: 'dispatcher',
+  UserRole.superAdmin: 'superAdmin',
+  UserRole.admin: 'admin',
+  UserRole.finance: 'finance',
+  UserRole.marketing: 'marketing',
+  UserRole.analytics: 'analytics',
+  UserRole.support: 'support',
+};
 
 CreateUserRequest _$CreateUserRequestFromJson(Map<String, dynamic> json) =>
     CreateUserRequest(
@@ -52,9 +65,8 @@ CreateUserRequest _$CreateUserRequestFromJson(Map<String, dynamic> json) =>
       email: json['email'] as String?,
       mobile: json['mobile'] as String,
       password: json['password'] as String,
-      role: json['role'] == null
-          ? UserRole.customer
-          : UserRole.fromString(json['role'] as String),
+      role: $enumDecodeNullable(_$UserRoleEnumMap, json['role']) ??
+          UserRole.customer,
     );
 
 Map<String, dynamic> _$CreateUserRequestToJson(CreateUserRequest instance) =>
@@ -63,7 +75,7 @@ Map<String, dynamic> _$CreateUserRequestToJson(CreateUserRequest instance) =>
       'email': instance.email,
       'mobile': instance.mobile,
       'password': instance.password,
-      'role': instance.role.value,
+      'role': _$UserRoleEnumMap[instance.role]!,
     };
 
 UpdateUserRequest _$UpdateUserRequestFromJson(Map<String, dynamic> json) =>
@@ -72,10 +84,8 @@ UpdateUserRequest _$UpdateUserRequestFromJson(Map<String, dynamic> json) =>
       email: json['email'] as String?,
       mobile: json['mobile'] as String?,
       password: json['password'] as String?,
-      role: json['role'] == null
-          ? null
-          : UserRole.fromString(json['role'] as String),
-      isActive: json['is_active'] as bool?,
+      role: $enumDecodeNullable(_$UserRoleEnumMap, json['role']),
+      isActive: json['isActive'] as bool?,
     );
 
 Map<String, dynamic> _$UpdateUserRequestToJson(UpdateUserRequest instance) =>
@@ -84,8 +94,8 @@ Map<String, dynamic> _$UpdateUserRequestToJson(UpdateUserRequest instance) =>
       'email': instance.email,
       'mobile': instance.mobile,
       'password': instance.password,
-      'role': instance.role?.value,
-      'is_active': instance.isActive,
+      'role': _$UserRoleEnumMap[instance.role],
+      'isActive': instance.isActive,
     };
 
 LoginRequest _$LoginRequestFromJson(Map<String, dynamic> json) => LoginRequest(
@@ -102,22 +112,22 @@ Map<String, dynamic> _$LoginRequestToJson(LoginRequest instance) =>
 AuthResponse _$AuthResponseFromJson(Map<String, dynamic> json) => AuthResponse(
       success: json['success'] as bool,
       message: json['message'] as String?,
-      accessToken: json['access_token'] as String?,
-      refreshToken: json['refresh_token'] as String?,
+      accessToken: json['accessToken'] as String?,
+      refreshToken: json['refreshToken'] as String?,
       user: json['user'] == null
           ? null
           : User.fromJson(json['user'] as Map<String, dynamic>),
-      expiresAt: json['expires_at'] == null
+      expiresAt: json['expiresAt'] == null
           ? null
-          : DateTime.parse(json['expires_at'] as String),
+          : DateTime.parse(json['expiresAt'] as String),
     );
 
 Map<String, dynamic> _$AuthResponseToJson(AuthResponse instance) =>
     <String, dynamic>{
       'success': instance.success,
       'message': instance.message,
-      'access_token': instance.accessToken,
-      'refresh_token': instance.refreshToken,
-      'user': instance.user?.toJson(),
-      'expires_at': instance.expiresAt?.toIso8601String(),
+      'accessToken': instance.accessToken,
+      'refreshToken': instance.refreshToken,
+      'user': instance.user,
+      'expiresAt': instance.expiresAt?.toIso8601String(),
     };

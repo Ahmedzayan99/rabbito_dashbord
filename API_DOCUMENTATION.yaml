@@ -1041,3 +1041,4 @@ x-error-codes:
   PAYMENT_001: "Payment processing failed"
   WALLET_001: "Insufficient balance"
   GENERAL_001: "Internal server error"
+

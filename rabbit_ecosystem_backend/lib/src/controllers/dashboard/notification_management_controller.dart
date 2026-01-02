@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:shelf/shelf.dart';
 import '../../services/notification_service.dart';
 import '../../models/notification.dart';
+import '../../services/notification_service.dart';
 import '../base_controller.dart';
 
 class NotificationManagementController extends BaseController {
@@ -51,7 +53,7 @@ class NotificationManagementController extends BaseController {
           offset: (pagination['page']! - 1) * pagination['limit']!,
         );
         // This is simplified - in real implementation, you'd need a method to count user notifications
-        totalCount = notifications.length + (pagination['limit']! * (pagination['page']! - 1));
+        totalCount = notifications.length + ((pagination['limit'] as int) * ((pagination['page'] as int) - 1));
       } else {
         // Get all notifications (admin only)
         // This would require a method to get all notifications with filters
@@ -79,18 +81,10 @@ class NotificationManagementController extends BaseController {
         return BaseController.forbidden();
       }
 
-      final notificationIdStr = request.params['notificationId'];
-      if (notificationIdStr == null) {
-        return BaseController.error(
-          message: 'Notification ID is required',
-          statusCode: HttpStatus.badRequest,
-        );
-      }
-
-      final notificationId = int.tryParse(notificationIdStr);
+      final notificationId = BaseController.getIdFromParams(request, 'notificationId');
       if (notificationId == null) {
         return BaseController.error(
-          message: 'Invalid notification ID',
+          message: 'Notification ID is required',
           statusCode: HttpStatus.badRequest,
         );
       }
@@ -101,12 +95,13 @@ class NotificationManagementController extends BaseController {
         id: notificationId,
         userId: 1,
         title: 'Mock Notification',
-        body: 'This is a mock notification',
-        type: 'test',
+        message: 'This is a mock notification',
+        type: NotificationType.general,
+        status: NotificationStatus.sent,
         data: {},
-        isRead: false,
-        sentAt: DateTime.now(),
         readAt: null,
+        createdAt: DateTime.now(),
+        updatedAt: null,
       );
 
       return BaseController.success(
@@ -273,18 +268,10 @@ class NotificationManagementController extends BaseController {
         return BaseController.forbidden();
       }
 
-      final notificationIdStr = request.params['notificationId'];
-      if (notificationIdStr == null) {
-        return BaseController.error(
-          message: 'Notification ID is required',
-          statusCode: HttpStatus.badRequest,
-        );
-      }
-
-      final notificationId = int.tryParse(notificationIdStr);
+      final notificationId = BaseController.getIdFromParams(request, 'notificationId');
       if (notificationId == null) {
         return BaseController.error(
-          message: 'Invalid notification ID',
+          message: 'Notification ID is required',
           statusCode: HttpStatus.badRequest,
         );
       }
@@ -313,18 +300,10 @@ class NotificationManagementController extends BaseController {
         return BaseController.forbidden();
       }
 
-      final userIdStr = request.params['userId'];
-      if (userIdStr == null) {
-        return BaseController.error(
-          message: 'User ID is required',
-          statusCode: HttpStatus.badRequest,
-        );
-      }
-
-      final userId = int.tryParse(userIdStr);
+      final userId = BaseController.getIdFromParams(request, 'userId');
       if (userId == null) {
         return BaseController.error(
-          message: 'Invalid user ID',
+          message: 'User ID is required',
           statusCode: HttpStatus.badRequest,
         );
       }
@@ -348,18 +327,10 @@ class NotificationManagementController extends BaseController {
         return BaseController.forbidden();
       }
 
-      final notificationIdStr = request.params['notificationId'];
-      if (notificationIdStr == null) {
-        return BaseController.error(
-          message: 'Notification ID is required',
-          statusCode: HttpStatus.badRequest,
-        );
-      }
-
-      final notificationId = int.tryParse(notificationIdStr);
+      final notificationId = BaseController.getIdFromParams(request, 'notificationId');
       if (notificationId == null) {
         return BaseController.error(
-          message: 'Invalid notification ID',
+          message: 'Notification ID is required',
           statusCode: HttpStatus.badRequest,
         );
       }
@@ -522,7 +493,7 @@ class NotificationManagementController extends BaseController {
       final cutoffDate = DateTime.now().subtract(Duration(days: daysOld));
 
       final deletedCount = await _notificationService.cleanupOldNotifications(
-        cutoffDate,
+        olderThan: Duration(days: daysOld),
       );
 
       return BaseController.success(
@@ -535,13 +506,3 @@ class NotificationManagementController extends BaseController {
   }
 }
 
-// Mock UserSegment enum (should be imported from notification service)
-enum UserSegment {
-  allCustomers,
-  allPartners,
-  allRiders,
-  activeUsers,
-  inactiveUsers,
-  highValueCustomers,
-  newUsers,
-}

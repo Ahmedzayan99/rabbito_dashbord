@@ -257,6 +257,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.3.2"
+  http:
+    dependency: transitive
+    description:
+      name: http
+      sha256: "87721a4a50b19c7f1d49001e51409bddc46303966ce89a65af4f4e6004896412"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.6.0"
   http_methods:
     dependency: transitive
     description:
@@ -345,6 +353,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.0"
+  mustache_template:
+    dependency: transitive
+    description:
+      name: mustache_template
+      sha256: daa42be75f2ccfb287c24a75e7ac594f2ea0b32bf9ebe7c15154aa45b2dfb2de
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.2"
   node_preamble:
     dependency: transitive
     description:
@@ -409,6 +425,54 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.5.0"
+  redis:
+    dependency: transitive
+    description:
+      name: redis
+      sha256: "4a8218ef7b0642ff499147c7a105591208259e2f55f07db0101ace7f82f66cf9"
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.0.0"
+  relic:
+    dependency: transitive
+    description:
+      name: relic
+      sha256: "400bc37b0ee5f8d02c911fb4213a5f3cb3f39496fc806c81f22ad25f1930bd15"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.14.0"
+  retry:
+    dependency: transitive
+    description:
+      name: retry
+      sha256: "822e118d5b3aafed083109c72d5f484c6dc66707885e07c0fbcb8b986bba7efc"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.1.2"
+  serverpod:
+    dependency: "direct main"
+    description:
+      name: serverpod
+      sha256: "01036b06059934595e4bb7d7865b0ece9bf58511eaf9d4f475eb124b175a5a27"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.1.1"
+  serverpod_serialization:
+    dependency: transitive
+    description:
+      name: serverpod_serialization
+      sha256: b1d17f55c5b0c7b44bf3dbc1c9525307560a6a5333c0947b45dedcea3e7fe822
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.1.1"
+  serverpod_shared:
+    dependency: transitive
+    description:
+      name: serverpod_shared
+      sha256: "87b765057e44801fc4c908ac124faa4fd2cccde4738a3c298effed59990c897f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.1.1"
   shelf:
     dependency: "direct main"
     description:
@@ -529,6 +593,30 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.1"
+  super_string:
+    dependency: transitive
+    description:
+      name: super_string
+      sha256: ba41acf9fbb318b3fc0d57c9235779100394d85d83f45ab533615df1f3146ea7
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.3"
+  synchronized:
+    dependency: transitive
+    description:
+      name: synchronized
+      sha256: c254ade258ec8282947a0acbbc90b9575b4f19673533ee46f2f6e9b3aeefd7c0
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.4.0"
+  system_resources:
+    dependency: transitive
+    description:
+      name: system_resources
+      sha256: "7e78cf8ef224c1e0b6bf4462322b6739fea2274fef928cbcbf21ae5e5a8272d8"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.6.0"
   term_glyph:
     dependency: transitive
     description:

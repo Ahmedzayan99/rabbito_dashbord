@@ -281,7 +281,7 @@ class PermissionMiddleware {
         }
 
         // Get the user ID from request parameters
-        final requestedUserId = request.params[userIdParam];
+        final requestedUserId = request.url.queryParameters[userIdParam];
         
         // Allow if user is accessing their own resource
         if (requestedUserId != null && user.id.toString() == requestedUserId) {

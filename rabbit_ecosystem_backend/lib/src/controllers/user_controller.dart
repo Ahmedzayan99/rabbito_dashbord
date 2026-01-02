@@ -373,7 +373,7 @@ class UserController {
         );
       }
 
-      final addressId = request.params['addressId'];
+      final addressId = request.url.queryParameters['addressId'];
       if (addressId == null) {
         return Response(
           HttpStatus.badRequest,
@@ -416,7 +416,7 @@ class UserController {
         );
       }
 
-      final addressId = request.params['addressId'];
+      final addressId = request.url.queryParameters['addressId'];
       if (addressId == null) {
         return Response(
           HttpStatus.badRequest,
@@ -552,7 +552,7 @@ class UserController {
         return BaseController.forbidden();
       }
 
-      final userIdStr = request.params['userId'];
+      final userIdStr = request.url.queryParameters['userId'];
       if (userIdStr == null) {
         return BaseController.error(
           message: 'User ID is required',
@@ -592,7 +592,7 @@ class UserController {
         return BaseController.forbidden();
       }
 
-      final userIdStr = request.params['userId'];
+      final userIdStr = request.url.queryParameters['userId'];
       if (userIdStr == null) {
         return BaseController.error(
           message: 'User ID is required',
@@ -657,7 +657,7 @@ class UserController {
         return BaseController.forbidden();
       }
 
-      final userIdStr = request.params['userId'];
+      final userIdStr = request.url.queryParameters['userId'];
       if (userIdStr == null) {
         return BaseController.error(
           message: 'User ID is required',
@@ -716,7 +716,7 @@ class UserController {
         return BaseController.forbidden();
       }
 
-      final userIdStr = request.params['userId'];
+      final userIdStr = request.url.queryParameters['userId'];
       if (userIdStr == null) {
         return BaseController.error(
           message: 'User ID is required',
@@ -756,7 +756,7 @@ class UserController {
         return BaseController.forbidden();
       }
 
-      final userIdStr = request.params['userId'];
+      final userIdStr = request.url.queryParameters['userId'];
       if (userIdStr == null) {
         return BaseController.error(
           message: 'User ID is required',
@@ -796,7 +796,7 @@ class UserController {
         return BaseController.forbidden();
       }
 
-      final userIdStr = request.params['userId'];
+      final userIdStr = request.url.queryParameters['userId'];
       if (userIdStr == null) {
         return BaseController.error(
           message: 'User ID is required',

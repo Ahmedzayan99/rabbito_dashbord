@@ -378,3 +378,4 @@ enum NotificationPriority {
   const NotificationPriority(this.value);
   final String value;
 }
+

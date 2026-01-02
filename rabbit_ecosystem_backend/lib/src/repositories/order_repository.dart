@@ -18,18 +18,23 @@ class OrderRepository extends BaseRepository<Order> {
   @override
   Map<String, dynamic> toMap(Order order) {
     return {
-      'customer_id': order.customerId,
+      'user_id': order.userId,
       'partner_id': order.partnerId,
       'rider_id': order.riderId,
       'address_id': order.addressId,
-      'status': order.status.name,
-      'total_amount': order.totalAmount,
-      'delivery_fee': order.deliveryFee,
+      'status': order.status.value,
+      'subtotal': order.subtotal,
+      'delivery_charge': order.deliveryCharge,
       'tax_amount': order.taxAmount,
       'discount_amount': order.discountAmount,
+      'total': order.total,
+      'payment_method': order.paymentMethod.value,
+      'otp': order.otp,
       'notes': order.notes,
-      'estimated_delivery_time': order.estimatedDeliveryTime?.toIso8601String(),
-      'actual_delivery_time': order.actualDeliveryTime?.toIso8601String(),
+      'delivery_time': order.deliveryTime,
+      'delivery_date': order.deliveryDate,
+      'estimated_delivery': order.estimatedDelivery?.toIso8601String(),
+      'actual_delivery': order.actualDelivery?.toIso8601String(),
       'created_at': order.createdAt.toIso8601String(),
       'updated_at': order.updatedAt?.toIso8601String(),
     };
@@ -456,51 +461,6 @@ class OrderRepository extends BaseRepository<Order> {
     return result.first['count'] as int;
   }
 
-  /// Update order status
-  Future<Order?> updateStatus(int orderId, OrderStatus status) async {
-    try {
-      final result = await executeQuery('''
-        UPDATE orders
-        SET status = @status, updated_at = CURRENT_TIMESTAMP
-        WHERE id = @order_id
-        RETURNING *
-      ''', parameters: {
-        'order_id': orderId,
-        'status': status.name,
-      });
-
-      if (result.isEmpty) {
-        return null;
-      }
-
-      return Order.fromJson(result.first);
-    } catch (e) {
-      throw Exception('Failed to update order status: ${e.toString()}');
-    }
-  }
-
-  /// Assign rider to order
-  Future<Order?> assignRider(int orderId, int riderId) async {
-    try {
-      final result = await executeQuery('''
-        UPDATE orders
-        SET rider_id = @rider_id, updated_at = CURRENT_TIMESTAMP
-        WHERE id = @order_id
-        RETURNING *
-      ''', parameters: {
-        'order_id': orderId,
-        'rider_id': riderId,
-      });
-
-      if (result.isEmpty) {
-        return null;
-      }
-
-      return Order.fromJson(result.first);
-    } catch (e) {
-      throw Exception('Failed to assign rider: ${e.toString()}');
-    }
-  }
 
   /// Get order statistics
   Future<Map<String, dynamic>> getOrderStatistics({
@@ -553,5 +513,28 @@ class OrderRepository extends BaseRepository<Order> {
     ''');
 
     return result.map((row) => Order.fromJson(row)).toList();
+  }
+
+  /// Get count of orders by status
+  Future<int> getCountByStatus(OrderStatus status) async {
+    final result = await executeQuerySingle(
+      'SELECT COUNT(*) as count FROM orders WHERE status = @status',
+      parameters: {'status': status.value},
+    );
+
+    return result?['count'] as int? ?? 0;
+  }
+
+  /// Get revenue for a specific period
+  Future<double> getRevenueForPeriod(DateTime startDate, DateTime endDate) async {
+    final result = await executeQuerySingle(
+      'SELECT COALESCE(SUM(total_amount), 0) as revenue FROM orders WHERE created_at >= @startDate AND created_at <= @endDate AND status = \'delivered\'',
+      parameters: {
+        'startDate': startDate.toIso8601String(),
+        'endDate': endDate.toIso8601String(),
+      },
+    );
+
+    return (result?['revenue'] as num?)?.toDouble() ?? 0.0;
   }
 }

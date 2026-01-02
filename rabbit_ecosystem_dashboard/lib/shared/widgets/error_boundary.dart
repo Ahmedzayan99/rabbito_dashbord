@@ -250,3 +250,4 @@ class StreamErrorBoundary<T> extends StatelessWidget {
     );
   }
 }
+

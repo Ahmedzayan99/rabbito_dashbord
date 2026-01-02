@@ -1,5 +1,5 @@
-import 'package:rabbit_ecosystem_backend/src/server.dart';
+import 'server.dart' as server;
 
-void main(List<String> args) async {
-  await run(args);
+void main(List<String> args) {
+  server.main(args);
 }

@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:equatable/equatable.dart';
 import '../../domain/usecases/login_usecase.dart';
 import '../../domain/usecases/logout_usecase.dart';
 import '../../domain/usecases/refresh_token_usecase.dart';
@@ -59,14 +60,18 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(AuthLoading());
 
     try {
-      // For demo purposes, simulate login
-      await Future.delayed(const Duration(seconds: 2));
+      final result = await loginUseCase(
+        LoginParams(
+          email: event.email,
+          password: event.password,
+          rememberMe: event.rememberMe,
+        ),
+      );
 
-      // In real implementation:
-      // final result = await loginUseCase(event.email, event.password);
-      // emit(AuthSuccess());
-
-      emit(AuthSuccess());
+      result.fold(
+        (failure) => emit(AuthFailure(failure.message)),
+        (_) => emit(AuthSuccess()),
+      );
     } catch (e) {
       emit(AuthFailure('Login failed. Please try again.'));
     }
@@ -102,3 +107,4 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     }
   }
 }
+

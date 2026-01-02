@@ -1,11 +1,16 @@
 import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
+import '../controllers/dashboard/auth_controller.dart';
 import '../controllers/dashboard/analytics_controller.dart';
 import '../controllers/dashboard/user_management_controller.dart';
 import '../controllers/dashboard/partner_management_controller.dart';
 import '../controllers/dashboard/order_management_controller.dart';
+import '../controllers/dashboard/product_management_controller.dart';
+import '../controllers/dashboard/product_controller.dart';
 import '../controllers/dashboard/wallet_management_controller.dart';
 import '../controllers/dashboard/notification_management_controller.dart';
+import '../controllers/dashboard/notification_controller.dart';
+import '../controllers/dashboard/report_controller.dart';
 import '../middleware/auth_middleware.dart';
 import '../middleware/role_middleware.dart';
 import '../models/user_role.dart';
@@ -13,7 +18,14 @@ import '../models/user_role.dart';
 class DashboardRoutes {
   Router get router {
     final router = Router();
-    
+
+    // Auth routes (no authentication required)
+    router.post('/auth/login', DashboardAuthController.login);
+    router.get('/auth/profile',
+        Pipeline()
+            .addMiddleware(AuthMiddleware.middleware)
+            .addHandler(DashboardAuthController.getProfile));
+
     // Analytics routes (admin roles only)
     router.get('/analytics/overview', 
         Pipeline()
@@ -28,17 +40,41 @@ class DashboardRoutes {
             .addHandler(AnalyticsController.getSalesReport));
     
     // User management routes
-    router.get('/users', 
+    router.get('/users',
         Pipeline()
             .addMiddleware(AuthMiddleware.middleware)
             .addMiddleware(RoleMiddleware.requireRoles([UserRole.superAdmin, UserRole.admin]))
             .addHandler(UserManagementController.getUsers));
-    
-    router.post('/users', 
+
+    router.get('/users/<userId>',
+        Pipeline()
+            .addMiddleware(AuthMiddleware.middleware)
+            .addMiddleware(RoleMiddleware.requireRoles([UserRole.superAdmin, UserRole.admin]))
+            .addHandler(UserManagementController.getUser));
+
+    router.post('/users',
         Pipeline()
             .addMiddleware(AuthMiddleware.middleware)
             .addMiddleware(RoleMiddleware.requireRoles([UserRole.superAdmin, UserRole.admin]))
             .addHandler(UserManagementController.createUser));
+
+    router.put('/users/<userId>',
+        Pipeline()
+            .addMiddleware(AuthMiddleware.middleware)
+            .addMiddleware(RoleMiddleware.requireRoles([UserRole.superAdmin, UserRole.admin]))
+            .addHandler(UserManagementController.updateUser));
+
+    router.delete('/users/<userId>',
+        Pipeline()
+            .addMiddleware(AuthMiddleware.middleware)
+            .addMiddleware(RoleMiddleware.requireRoles([UserRole.superAdmin]))
+            .addHandler(UserManagementController.deleteUser));
+
+    router.put('/users/<userId>/status',
+        Pipeline()
+            .addMiddleware(AuthMiddleware.middleware)
+            .addMiddleware(RoleMiddleware.requireRoles([UserRole.superAdmin, UserRole.admin]))
+            .addHandler(UserManagementController.toggleUserStatus));
     
     // Partner management routes
     router.get('/partners', 
@@ -83,6 +119,50 @@ class DashboardRoutes {
             .addMiddleware(AuthMiddleware.middleware)
             .addMiddleware(RoleMiddleware.requireRoles([UserRole.superAdmin, UserRole.admin]))
             .addHandler(OrderManagementController.cancelOrder));
+
+    // Product management routes
+    router.get('/products',
+        Pipeline()
+            .addMiddleware(AuthMiddleware.middleware)
+            .addMiddleware(RoleMiddleware.requireRoles([UserRole.superAdmin, UserRole.admin]))
+            .addHandler(ProductManagementController.getProducts));
+
+    router.get('/products/<productId>',
+        Pipeline()
+            .addMiddleware(AuthMiddleware.middleware)
+            .addMiddleware(RoleMiddleware.requireRoles([UserRole.superAdmin, UserRole.admin]))
+            .addHandler(ProductManagementController.getProduct));
+
+    router.post('/products',
+        Pipeline()
+            .addMiddleware(AuthMiddleware.middleware)
+            .addMiddleware(RoleMiddleware.requireRoles([UserRole.superAdmin, UserRole.admin]))
+            .addHandler(ProductManagementController.createProduct));
+
+    router.put('/products/<productId>',
+        Pipeline()
+            .addMiddleware(AuthMiddleware.middleware)
+            .addMiddleware(RoleMiddleware.requireRoles([UserRole.superAdmin, UserRole.admin]))
+            .addHandler(ProductManagementController.updateProduct));
+
+    router.delete('/products/<productId>',
+        Pipeline()
+            .addMiddleware(AuthMiddleware.middleware)
+            .addMiddleware(RoleMiddleware.requireRoles([UserRole.superAdmin]))
+            .addHandler(ProductManagementController.deleteProduct));
+
+    // Additional product routes for dashboard
+    router.post('/products',
+        Pipeline()
+            .addMiddleware(AuthMiddleware.middleware)
+            .addMiddleware(RoleMiddleware.requireRoles([UserRole.superAdmin, UserRole.admin]))
+            .addHandler(ProductController.createProduct));
+
+    router.put('/products/<productId>',
+        Pipeline()
+            .addMiddleware(AuthMiddleware.middleware)
+            .addMiddleware(RoleMiddleware.requireRoles([UserRole.superAdmin, UserRole.admin]))
+            .addHandler(ProductController.updateProduct));
 
     router.get('/orders/statistics',
         Pipeline()
@@ -235,6 +315,38 @@ class DashboardRoutes {
             .addMiddleware(AuthMiddleware.middleware)
             .addMiddleware(RoleMiddleware.requireRoles([UserRole.superAdmin]))
             .addHandler(NotificationManagementController.cleanupOldNotifications));
+
+    // Notification routes
+    router.post('/notifications/send',
+        Pipeline()
+            .addMiddleware(AuthMiddleware.middleware)
+            .addMiddleware(RoleMiddleware.requireRoles([UserRole.superAdmin, UserRole.admin, UserRole.support]))
+            .addHandler(NotificationController.sendNotification));
+
+    router.get('/notifications',
+        Pipeline()
+            .addMiddleware(AuthMiddleware.middleware)
+            .addMiddleware(RoleMiddleware.requireRoles([UserRole.superAdmin, UserRole.admin, UserRole.support]))
+            .addHandler(NotificationController.getNotifications));
+
+    router.get('/notifications/<notificationId>',
+        Pipeline()
+            .addMiddleware(AuthMiddleware.middleware)
+            .addMiddleware(RoleMiddleware.requireRoles([UserRole.superAdmin, UserRole.admin, UserRole.support]))
+            .addHandler(NotificationController.getNotification));
+
+    router.delete('/notifications/<notificationId>',
+        Pipeline()
+            .addMiddleware(AuthMiddleware.middleware)
+            .addMiddleware(RoleMiddleware.requireRoles([UserRole.superAdmin, UserRole.admin]))
+            .addHandler(NotificationController.deleteNotification));
+
+    // Reports routes
+    router.get('/reports/sales',
+        Pipeline()
+            .addMiddleware(AuthMiddleware.middleware)
+            .addMiddleware(RoleMiddleware.requireRoles([UserRole.superAdmin, UserRole.admin, UserRole.finance]))
+            .addHandler(ReportController.getSalesReport));
 
     return router;
   }

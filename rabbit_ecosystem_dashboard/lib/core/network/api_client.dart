@@ -52,7 +52,7 @@ class ApiClientImpl implements ApiClient {
 
   void _configureDio() {
     dio
-      ..options.baseUrl = 'http://localhost:8080/api/v1'
+      ..options.baseUrl = 'http://localhost:8080'
       ..options.connectTimeout = const Duration(seconds: 30)
       ..options.receiveTimeout = const Duration(seconds: 30)
       ..options.sendTimeout = const Duration(seconds: 30)
@@ -152,3 +152,4 @@ class ApiClientImpl implements ApiClient {
     }
   }
 }
+

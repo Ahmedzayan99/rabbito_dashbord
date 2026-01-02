@@ -75,7 +75,6 @@ class PaymentController extends BaseController {
         data: {
           'payment': paymentResult.payment!.toJson(),
           'transaction_id': paymentResult.transactionId,
-          'receipt_url': paymentResult.receiptUrl,
         },
         message: paymentResult.message,
         statusCode: HttpStatus.created,

@@ -565,10 +565,21 @@ sudo apt install -y prometheus grafana
 ---
 
 ## 📞 Need Help?
+# Backend
+cd rabbit_ecosystem_backend
+dart bin/server.dart
 
+# Dashboard
+cd rabbit_ecosystem_dashboard
+flutter pub get
+flutter run -d chrome
+
+# Production
+docker-compose -f docker-compose.prod.yml up -d
 For deployment issues or questions:
 - Check the [troubleshooting guide](README.md#troubleshooting)
 - Review [application logs](#logs-monitoring)
 - Contact the development team
 
 **Happy deploying! 🚀**
+

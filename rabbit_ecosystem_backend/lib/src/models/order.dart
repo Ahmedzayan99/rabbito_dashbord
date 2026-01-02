@@ -1,11 +1,14 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'payment.dart';
 
 part 'order.g.dart';
 
 enum OrderStatus {
   pending('pending'),
   confirmed('confirmed'),
+  assigned('assigned'),
   preparing('preparing'),
+  onTheWay('on_the_way'),
   ready('ready'),
   pickedUp('picked_up'),
   delivered('delivered'),
@@ -21,26 +24,9 @@ enum OrderStatus {
     );
   }
 
-  bool get isActive => [pending, confirmed, preparing, ready, pickedUp].contains(this);
+  bool get isActive => [pending, confirmed, assigned, preparing, onTheWay, ready, pickedUp].contains(this);
   bool get isCompleted => this == delivered;
   bool get isCancelled => this == cancelled;
-}
-
-enum PaymentMethod {
-  cash('cash'),
-  card('card'),
-  wallet('wallet'),
-  online('online');
-
-  const PaymentMethod(this.value);
-  final String value;
-
-  static PaymentMethod fromString(String value) {
-    return PaymentMethod.values.firstWhere(
-      (method) => method.value == value,
-      orElse: () => PaymentMethod.cash,
-    );
-  }
 }
 
 @JsonSerializable()
@@ -95,6 +81,46 @@ class Order {
 
   factory Order.fromJson(Map<String, dynamic> json) => _$OrderFromJson(json);
   Map<String, dynamic> toJson() => _$OrderToJson(this);
+
+  /// Factory constructor from database map
+  factory Order.fromMap(Map<String, dynamic> map) {
+    return Order(
+      id: map['id'] as int,
+      uuid: map['uuid'] as String,
+      userId: map['user_id'] as int,
+      riderId: map['rider_id'] as int?,
+      partnerId: map['partner_id'] as int,
+      addressId: map['address_id'] as int,
+      subtotal: (map['subtotal'] as num).toDouble(),
+      deliveryCharge: (map['delivery_charge'] as num).toDouble(),
+      taxAmount: (map['tax_amount'] as num).toDouble(),
+      discountAmount: (map['discount_amount'] as num).toDouble(),
+      total: (map['total'] as num).toDouble(),
+      paymentMethod: PaymentMethod.values.firstWhere(
+        (method) => method.name == map['payment_method'],
+        orElse: () => PaymentMethod.cash,
+      ),
+      status: OrderStatus.values.firstWhere(
+        (status) => status.name == map['status'],
+        orElse: () => OrderStatus.pending,
+      ),
+      otp: map['otp'] as String?,
+      notes: map['notes'] as String?,
+      deliveryTime: map['delivery_time'] as String?,
+      deliveryDate: map['delivery_date'] as String?,
+      estimatedDelivery: map['estimated_delivery'] != null
+          ? DateTime.parse(map['estimated_delivery'] as String)
+          : null,
+      actualDelivery: map['actual_delivery'] != null
+          ? DateTime.parse(map['actual_delivery'] as String)
+          : null,
+      items: [], // Would need to be populated separately
+      createdAt: DateTime.parse(map['created_at'] as String),
+      updatedAt: map['updated_at'] != null
+          ? DateTime.parse(map['updated_at'] as String)
+          : null,
+    );
+  }
 
   Order copyWith({
     int? id,
@@ -154,6 +180,13 @@ class Order {
 
   @override
   int get hashCode => Object.hash(id, uuid);
+
+  // Computed properties for backward compatibility
+  int get customerId => userId;
+  double get totalAmount => total;
+  double get finalTotal => total;
+  double get deliveryFee => deliveryCharge;
+  DateTime? get estimatedDeliveryTime => estimatedDelivery;
 
   @override
   String toString() {

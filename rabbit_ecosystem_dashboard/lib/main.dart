@@ -7,27 +7,43 @@ import 'core/theme/app_theme.dart';
 import 'features/auth/presentation/pages/login_page.dart';
 import 'features/dashboard/presentation/pages/dashboard_page.dart';
 import 'shared/widgets/error_boundary.dart';
+import 'core/router/app_router.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-
-  // Configure URL strategy for web
-  usePathUrlStrategy();
-
-  // Initialize dependency injection
-  await setupInjection();
-
-  // Initialize app configuration
-  await AppConfig.initialize();
-
-  runApp(const RabbitEcosystemDashboard());
-}
-
-class RabbitEcosystemDashboard extends StatelessWidget {
+class RabbitEcosystemDashboard extends StatefulWidget {
   const RabbitEcosystemDashboard({super.key});
 
   @override
+  State<RabbitEcosystemDashboard> createState() => _RabbitEcosystemDashboardState();
+}
+
+class _RabbitEcosystemDashboardState extends State<RabbitEcosystemDashboard> {
+  Widget? _initialScreen;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadInitialScreen();
+  }
+
+  Future<void> _loadInitialScreen() async {
+    final screen = await AppRouter.getInitialScreen();
+    setState(() {
+      _initialScreen = screen;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (_initialScreen == null) {
+      return const MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: CircularProgressIndicator(),
+          ),
+        ),
+      );
+    }
+
     return MaterialApp(
       title: 'Rabbit Ecosystem - Admin Dashboard',
       debugShowCheckedModeBanner: false,
@@ -57,11 +73,24 @@ class RabbitEcosystemDashboard extends StatelessWidget {
       },
 
       // Routes
-      initialRoute: '/login',
-      routes: {
-        '/login': (context) => const LoginPage(),
-        '/dashboard': (context) => const DashboardPage(),
-      },
+      initialRoute: '/',
+      onGenerateRoute: AppRouter.onGenerateRoute,
+      home: _initialScreen,
     );
   }
+}
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Configure URL strategy for web
+  usePathUrlStrategy();
+
+  // Initialize dependency injection
+  await setupInjection();
+
+  // Initialize app configuration
+  await AppConfig.initialize();
+
+  runApp(const RabbitEcosystemDashboard());
 }

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:shelf/shelf.dart';
 import '../../services/wallet_service.dart';
 import '../../models/payment.dart';
@@ -6,9 +7,9 @@ import '../../models/transaction.dart';
 import '../base_controller.dart';
 
 class WalletController extends BaseController {
+  // TODO: Initialize with proper repositories
   static final WalletService _walletService = WalletService(
-    // These would be injected in real implementation
-    null, null, null,
+    null as dynamic, null as dynamic, null as dynamic,
   );
 
   /// GET /api/mobile/wallet/balance - Get user wallet balance
@@ -256,9 +257,10 @@ class WalletController extends BaseController {
 
         if (typeFilter != null && typeFilter.isNotEmpty) {
           try {
-            filter = filter.copyWith(type: TransactionType.values.firstWhere(
+            final type = TransactionType.values.firstWhere(
               (t) => t.name == typeFilter,
-            ));
+            );
+            filter = filter?.copyWith(type: type) ?? TransactionFilter(type: type);
           } catch (e) {
             // Invalid type, ignore filter
           }
@@ -266,9 +268,10 @@ class WalletController extends BaseController {
 
         if (statusFilter != null && statusFilter.isNotEmpty) {
           try {
-            filter = filter.copyWith(status: TransactionStatus.values.firstWhere(
+            final status = TransactionStatus.values.firstWhere(
               (s) => s.name == statusFilter,
-            ));
+            );
+            filter = filter?.copyWith(status: status) ?? TransactionFilter(status: status);
           } catch (e) {
             // Invalid status, ignore filter
           }
@@ -349,3 +352,4 @@ class WalletController extends BaseController {
     }
   }
 }
+

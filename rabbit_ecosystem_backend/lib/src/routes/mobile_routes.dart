@@ -12,8 +12,8 @@ import '../middleware/auth_middleware.dart';
 
 class MobileRoutes {
   // TODO: Inject controllers via dependency injection
-  static final CartController _cartController = CartController(/* inject service */);
-  static final PaymentController _paymentController = PaymentController(/* inject service */);
+  static final CartController _cartController = CartController(null as dynamic);
+  static final PaymentController _paymentController = PaymentController(null as dynamic);
 
   Router get router {
     final router = Router();
@@ -36,7 +36,8 @@ class MobileRoutes {
     router.get('/partners', PartnerController.getPartners);
     router.get('/partners/<partnerId>/products', ProductController.getPartnerProducts);
     router.get('/products/<productId>', ProductController.getProduct);
-    router.get('/categories', ProductController.getCategories);
+    // TODO: Implement getCategories method
+    // router.get('/categories', ProductController.getCategories);
 
     // Order routes
     router.post('/orders',
@@ -45,8 +46,9 @@ class MobileRoutes {
         authPipeline.addHandler(OrderController.getUserOrders));
     router.get('/orders/<orderId>',
         authPipeline.addHandler(OrderController.getOrder));
-    router.put('/orders/<orderId>/cancel',
-        authPipeline.addHandler(OrderController.cancelOrder));
+    // TODO: Implement cancelOrder method
+    // router.put('/orders/<orderId>/cancel',
+    //     authPipeline.addHandler(OrderController.cancelOrder));
 
     // Cart routes
     router.post('/cart/add',

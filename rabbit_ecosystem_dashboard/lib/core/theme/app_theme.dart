@@ -186,7 +186,7 @@ class AppTheme {
       ),
 
       // Card Theme
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: cardColor,
         shadowColor: shadowColor,
         elevation: 2,
@@ -348,7 +348,7 @@ class AppTheme {
       ),
 
       // Dialog Theme
-      dialogTheme: DialogTheme(
+      dialogTheme: DialogThemeData(
         backgroundColor: surfaceColor,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(radiusLg),
@@ -373,7 +373,7 @@ class AppTheme {
       ),
 
       // Tab Bar Theme
-      tabBarTheme: TabBarTheme(
+      tabBarTheme: TabBarThemeData(
         labelColor: primaryColor,
         unselectedLabelColor: textSecondary,
         indicatorColor: primaryColor,
@@ -481,7 +481,7 @@ class AppTheme {
       ),
 
       // Card Theme for dark theme
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: const Color(0xFF1E293B),
         shadowColor: shadowColor,
         elevation: 2,
@@ -528,3 +528,4 @@ class AppTheme {
     );
   }
 }
+

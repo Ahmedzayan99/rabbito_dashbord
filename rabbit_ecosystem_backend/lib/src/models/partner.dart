@@ -3,9 +3,11 @@ import 'package:json_annotation/json_annotation.dart';
 part 'partner.g.dart';
 
 enum PartnerStatus {
+  pending('pending'),
   active('active'),
   inactive('inactive'),
-  suspended('suspended');
+  suspended('suspended'),
+  rejected('rejected');
 
   const PartnerStatus(this.value);
   final String value;
@@ -133,6 +135,15 @@ class Partner {
 
   @override
   int get hashCode => id.hashCode;
+
+  // Computed properties for backward compatibility
+  double get deliveryFee => deliveryCharge;
+  double get commissionRate => commission;
+  int get estimatedDeliveryTime => cookingTime;
+
+  // Rating properties (would be computed from reviews)
+  double get rating => 4.5; // Default rating
+  int get numberOfRatings => 100; // Default count
 
   @override
   String toString() {
