@@ -1,0 +1,1043 @@
+openapi: 3.0.3
+info:
+  title: Rabbit Ecosystem API
+  description: Complete API documentation for the Rabbit Ecosystem food delivery platform
+  version: 1.0.0
+  contact:
+    name: Rabbit Ecosystem Support
+    email: support@rabbit-ecosystem.com
+    url: https://rabbit-ecosystem.com
+
+servers:
+  - url: https://api.rabbit-ecosystem.com/api/v1
+    description: Production server
+  - url: http://localhost:8080/api/v1
+    description: Development server
+
+security:
+  - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    # Common schemas
+    Error:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: "Error description"
+        error:
+          type: string
+          example: "ERROR_CODE"
+        timestamp:
+          type: string
+          format: date-time
+      required:
+        - success
+        - message
+
+    Success:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Operation successful"
+        data:
+          type: object
+        timestamp:
+          type: string
+          format: date-time
+      required:
+        - success
+        - message
+
+    PaginatedResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Data retrieved successfully"
+        data:
+          type: array
+          items:
+            type: object
+        pagination:
+          type: object
+          properties:
+            page:
+              type: integer
+              example: 1
+            limit:
+              type: integer
+              example: 20
+            total:
+              type: integer
+              example: 150
+            totalPages:
+              type: integer
+              example: 8
+      required:
+        - success
+        - message
+        - data
+        - pagination
+
+    # User schemas
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        uuid:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        username:
+          type: string
+          example: "john_doe"
+        email:
+          type: string
+          format: email
+          example: "john@example.com"
+        mobile:
+          type: string
+          example: "+966501234567"
+        role:
+          type: string
+          enum: [customer, partner, rider, super_admin, admin, finance, support]
+          example: "customer"
+        balance:
+          type: number
+          format: float
+          example: 150.50
+        rating:
+          type: number
+          format: float
+          example: 4.5
+        isActive:
+          type: boolean
+          example: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - uuid
+        - email
+        - mobile
+        - role
+        - balance
+        - isActive
+        - createdAt
+
+    # Order schemas
+    Order:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 12345
+        uuid:
+          type: string
+          format: uuid
+        customerId:
+          type: integer
+        partnerId:
+          type: integer
+        riderId:
+          type: integer
+          nullable: true
+        status:
+          type: string
+          enum: [pending, confirmed, preparing, ready, picked_up, delivered, cancelled]
+        totalAmount:
+          type: number
+          format: float
+          example: 85.50
+        deliveryFee:
+          type: number
+          format: float
+          example: 10.00
+        taxAmount:
+          type: number
+          format: float
+          example: 4.25
+        discountAmount:
+          type: number
+          format: float
+          example: 5.00
+        notes:
+          type: string
+          nullable: true
+        estimatedDeliveryTime:
+          type: string
+          format: date-time
+        actualDeliveryTime:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - customerId
+        - partnerId
+        - status
+        - totalAmount
+        - deliveryFee
+        - taxAmount
+        - discountAmount
+        - estimatedDeliveryTime
+        - createdAt
+
+    # Partner schemas
+    Partner:
+      type: object
+      properties:
+        id:
+          type: integer
+        uuid:
+          type: string
+          format: uuid
+        userId:
+          type: integer
+        businessName:
+          type: string
+          example: "Pizza Palace"
+        businessType:
+          type: string
+          example: "restaurant"
+        description:
+          type: string
+        address:
+          type: string
+        phone:
+          type: string
+        email:
+          type: string
+          format: email
+        status:
+          type: string
+          enum: [active, inactive, suspended]
+        rating:
+          type: number
+          format: float
+        totalOrders:
+          type: integer
+        commissionRate:
+          type: number
+          format: float
+        isVerified:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - userId
+        - businessName
+        - status
+        - rating
+        - commissionRate
+        - isVerified
+
+    # Transaction schemas
+    Transaction:
+      type: object
+      properties:
+        id:
+          type: integer
+        uuid:
+          type: string
+          format: uuid
+        userId:
+          type: integer
+        orderId:
+          type: integer
+          nullable: true
+        type:
+          type: string
+          enum: [order_payment, wallet_topup, withdrawal, commission, refund]
+        amount:
+          type: number
+          format: float
+        description:
+          type: string
+        referenceId:
+          type: string
+        paymentMethod:
+          type: string
+          enum: [cash, card, wallet, online]
+        status:
+          type: string
+          enum: [pending, processing, completed, failed, cancelled]
+        processedAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - userId
+        - type
+        - amount
+        - status
+        - createdAt
+
+    # Request/Response schemas
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+        rememberMe:
+          type: boolean
+          default: false
+      required:
+        - email
+        - password
+
+    LoginResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: true
+        message:
+          type: string
+          example: "Login successful"
+        data:
+          type: object
+          properties:
+            user:
+              $ref: '#/components/schemas/User'
+            accessToken:
+              type: string
+              example: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
+            refreshToken:
+              type: string
+              example: "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9..."
+            expiresIn:
+              type: integer
+              example: 3600
+      required:
+        - success
+        - message
+        - data
+
+    CreateOrderRequest:
+      type: object
+      properties:
+        partnerId:
+          type: integer
+        addressId:
+          type: integer
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              productId:
+                type: integer
+              quantity:
+                type: integer
+                minimum: 1
+              notes:
+                type: string
+        notes:
+          type: string
+        paymentMethod:
+          type: string
+          enum: [cash, card, wallet]
+      required:
+        - partnerId
+        - addressId
+        - items
+        - paymentMethod
+
+paths:
+  # Authentication endpoints
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: User login
+      description: Authenticate user with email and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: User registration
+      description: Register a new user account
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  minLength: 3
+                  maxLength: 50
+                email:
+                  type: string
+                  format: email
+                mobile:
+                  type: string
+                  pattern: '^\+[1-9]\d{1,14}$'
+                password:
+                  type: string
+                  minLength: 8
+                  maxLength: 128
+              required:
+                - username
+                - email
+                - mobile
+                - password
+      responses:
+        '201':
+          description: Registration successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /auth/refresh:
+    post:
+      tags:
+        - Authentication
+      summary: Refresh access token
+      description: Get a new access token using refresh token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refreshToken:
+                  type: string
+              required:
+                - refreshToken
+      responses:
+        '200':
+          description: Token refreshed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                  refreshToken:
+                    type: string
+                  expiresIn:
+                    type: integer
+        '401':
+          description: Invalid refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # Mobile App Endpoints
+  /mobile/partners:
+    get:
+      tags:
+        - Mobile App
+      summary: Get partners list
+      description: Retrieve list of available partners/restaurants
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: category
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Partners retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedResponse'
+
+  /mobile/orders:
+    get:
+      tags:
+        - Mobile App
+      summary: Get user orders
+      description: Retrieve user's order history
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, confirmed, preparing, ready, picked_up, delivered, cancelled]
+      responses:
+        '200':
+          description: Orders retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedResponse'
+
+    post:
+      tags:
+        - Mobile App
+      summary: Create new order
+      description: Place a new food order
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrderRequest'
+      responses:
+        '201':
+          description: Order created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Order created successfully"
+                  data:
+                    $ref: '#/components/schemas/Order'
+        '400':
+          description: Invalid order data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /mobile/wallet/balance:
+    get:
+      tags:
+        - Mobile App
+      summary: Get wallet balance
+      description: Retrieve user's wallet balance
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Balance retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      balance:
+                        type: number
+                        format: float
+                        example: 150.50
+
+  /mobile/wallet/topup:
+    post:
+      tags:
+        - Mobile App
+      summary: Topup wallet
+      description: Add money to user's wallet
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: number
+                  format: float
+                  minimum: 1
+                paymentMethod:
+                  type: string
+                  enum: [card, online]
+                description:
+                  type: string
+              required:
+                - amount
+                - paymentMethod
+      responses:
+        '200':
+          description: Wallet topped up successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      newBalance:
+                        type: number
+                        format: float
+
+  # Dashboard Endpoints
+  /dashboard/users:
+    get:
+      tags:
+        - Dashboard
+      summary: Get users (admin)
+      description: Retrieve paginated list of users for admin dashboard
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: role
+          in: query
+          schema:
+            type: string
+            enum: [customer, partner, rider, super_admin, admin, finance, support]
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: isActive
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Users retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedResponse'
+
+    post:
+      tags:
+        - Dashboard
+      summary: Create user (admin)
+      description: Create a new user account (admin only)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                mobile:
+                  type: string
+                password:
+                  type: string
+                role:
+                  type: string
+                  enum: [customer, partner, rider, super_admin, admin, finance, support]
+                isActive:
+                  type: boolean
+                  default: true
+              required:
+                - username
+                - email
+                - mobile
+                - password
+                - role
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+
+  /dashboard/orders:
+    get:
+      tags:
+        - Dashboard
+      summary: Get orders (admin)
+      description: Retrieve paginated list of all orders for admin dashboard
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, confirmed, preparing, ready, picked_up, delivered, cancelled]
+        - name: partnerId
+          in: query
+          schema:
+            type: integer
+        - name: riderId
+          in: query
+          schema:
+            type: integer
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Orders retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedResponse'
+
+  /dashboard/orders/{orderId}/status:
+    put:
+      tags:
+        - Dashboard
+      summary: Update order status (admin)
+      description: Update the status of an order (admin only)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: orderId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [pending, confirmed, preparing, ready, picked_up, delivered, cancelled]
+                notes:
+                  type: string
+              required:
+                - status
+      responses:
+        '200':
+          description: Order status updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        '404':
+          description: Order not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /dashboard/analytics/overview:
+    get:
+      tags:
+        - Dashboard
+      summary: Get analytics overview
+      description: Retrieve dashboard analytics overview
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Analytics retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      totalUsers:
+                        type: integer
+                      totalOrders:
+                        type: integer
+                      totalRevenue:
+                        type: number
+                        format: float
+                      activePartners:
+                        type: integer
+                      activeRiders:
+                        type: integer
+                      averageOrderValue:
+                        type: number
+                        format: float
+                      userGrowth:
+                        type: object
+                        properties:
+                          thisMonth:
+                            type: integer
+                          lastMonth:
+                            type: integer
+                          growth:
+                            type: number
+                            format: float
+
+  /dashboard/notifications:
+    get:
+      tags:
+        - Dashboard
+      summary: Get notifications (admin)
+      description: Retrieve notifications for admin management
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: type
+          in: query
+          schema:
+            type: string
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Notifications retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedResponse'
+
+    post:
+      tags:
+        - Dashboard
+      summary: Send notification (admin)
+      description: Send a notification to a specific user (admin only)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: integer
+                title:
+                  type: string
+                body:
+                  type: string
+                type:
+                  type: string
+                data:
+                  type: object
+              required:
+                - userId
+                - title
+                - body
+      responses:
+        '200':
+          description: Notification sent successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+
+  # Health check endpoint
+  /health:
+    get:
+      tags:
+        - System
+      summary: Health check
+      description: Check system health status
+      responses:
+        '200':
+          description: System is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "healthy"
+                  timestamp:
+                    type: string
+                    format: date-time
+                  uptime:
+                    type: number
+                    format: float
+
+# WebSocket documentation
+externalDocs:
+  description: WebSocket Real-time Communication
+  url: ./WEBSOCKET_DOCS.md
+
+# Rate limiting information
+x-rate-limits:
+  general:
+    limit: 1000
+    window: 1h
+  auth:
+    limit: 5
+    window: 15m
+  orders:
+    limit: 100
+    window: 1h
+
+# Error codes reference
+x-error-codes:
+  AUTH_001: "Invalid credentials"
+  AUTH_002: "Token expired"
+  AUTH_003: "Insufficient permissions"
+  ORDER_001: "Order not found"
+  ORDER_002: "Invalid order status transition"
+  PAYMENT_001: "Payment processing failed"
+  WALLET_001: "Insufficient balance"
+  GENERAL_001: "Internal server error"

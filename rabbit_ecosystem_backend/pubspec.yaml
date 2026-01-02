@@ -1,0 +1,23 @@
+name: rabbit_ecosystem_backend
+description: Rabbit Ecosystem Backend API using Dart
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  shelf: ^1.4.1
+  shelf_router: ^1.1.4
+  shelf_cors_headers: ^0.1.5
+  postgres: ^3.0.0
+  crypto: ^3.0.3
+  dart_jsonwebtoken: ^2.12.2
+  bcrypt: ^1.1.3
+  uuid: ^4.1.0
+  json_annotation: ^4.8.1
+
+dev_dependencies:
+  test: ^1.24.0
+  build_runner: ^2.4.7
+  json_serializable: ^6.7.1
+  faker: ^2.1.0

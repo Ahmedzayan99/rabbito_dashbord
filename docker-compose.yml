@@ -1,0 +1,71 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: rabbit_postgres
+    environment:
+      POSTGRES_DB: rabbit_ecosystem
+      POSTGRES_USER: rabbit_user
+      POSTGRES_PASSWORD: rabbit_password_2024
+      POSTGRES_HOST_AUTH_METHOD: trust
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d
+    networks:
+      - rabbit_network
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: rabbit_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - rabbit_network
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./rabbit_ecosystem_backend
+      dockerfile: Dockerfile
+    container_name: rabbit_backend
+    environment:
+      - DATABASE_URL=postgresql://rabbit_user:rabbit_password_2024@postgres:5432/rabbit_ecosystem
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=your_super_secret_jwt_key_2024_rabbit_ecosystem
+      - ENVIRONMENT=production
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - rabbit_network
+    restart: unless-stopped
+    volumes:
+      - ./rabbit_ecosystem_backend:/app
+      - /app/build
+
+  dashboard:
+    build:
+      context: ./rabbit_ecosystem_dashboard
+      dockerfile: Dockerfile
+    container_name: rabbit_dashboard
+    ports:
+      - "3000:80"
+    networks:
+      - rabbit_network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  rabbit_network:
+    driver: bridge
